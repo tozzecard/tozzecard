@@ -5,7 +5,10 @@
 1. Branch from `main`: `<name>/<topic>`, e.g. `fajar/refill-swap`, `axel/passkey-card`.
 2. Keep PRs small and inside your area (see `.github/CODEOWNERS`). Touching someone else's area? Tag them.
 3. `bun run lint && bun run typecheck && bun test` must pass. CI runs the same.
-4. One approval from the area owner, then squash-merge.
+4. Ask the area owner for review. `main` is protected: CI must be green, and a
+   **"changes requested" review blocks the merge until it is resolved**. No approval count is
+   enforced so nobody waits on an idle teammate, but don't merge over open review comments.
+   Squash-merge and delete the branch.
 
 ## Commits
 
