@@ -24,11 +24,27 @@ export class BawError extends Error {
 }
 
 export const cli = {
+  bin: ["bun", BAW],
+  // baw never exits when signed out or when *.binance.com is unreachable (ISP DNS block), which
+  // hung callers and leaked processes. Kill it and fail loudly instead.
+  timeoutMs: 30_000,
   async run<T>(args: string[]): Promise<T> {
-    const proc = Bun.spawn(["bun", BAW, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
+    const proc = Bun.spawn([...cli.bin, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      proc.kill();
+    }, cli.timeoutMs);
     const out =
       (await new Response(proc.stdout).text()) || (await new Response(proc.stderr).text());
     await proc.exited;
+    clearTimeout(timer);
+    if (timedOut)
+      throw new BawError(
+        0,
+        "TIMEOUT",
+        `baw ${args.slice(0, 2).join(" ")} gave no answer in ${cli.timeoutMs} ms (signed out, or *.binance.com unreachable)`,
+      );
     const res = JSON.parse(out);
     if (!res.success) throw new BawError(res.error.code, res.error.name, res.error.message);
     return res.data as T;

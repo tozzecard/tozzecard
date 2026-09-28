@@ -40,6 +40,7 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Fajar | ai-stack | `baw wallet --help` (1.10.0) | No command lists the address book. The agent cannot check that the card is the only entry; only the user can, in the App. Requested capability: read-only `wallet address-book` | — |
 | 2026-09-28 | Fajar | ai-stack | `baw wallet send` with Developer Mode **on** | Still `351703`: the address book holds for `send` even in Developer Mode. Only `contract-call` bypasses it | — |
 | 2026-09-28 | Fajar | ai-stack | `baw market-order swap` USD1→NVDAB (first use of USD1) | `swap` returned orderId `26092800001922406867`, but the order that ran is `…6868` (FINISHED, tx `0x306caa7cae0ee15b5d7bf3832724cd7523393d30a9e0e9bd73b9f72225180dfc`). `list --orderId …6867` stays empty forever, so polling by the returned id reports a stuck swap that actually succeeded. Workaround: list by `--fromToken/--toToken/--startTime` | 20 min |
+| 2026-09-29 | Kiel | ai-stack | `baw wallet status --json` / `wallet balance` (1.10.0), signed out, on an Indonesian ISP without WARP | The process never exits and prints nothing: no error, no timeout. Called from a server it hangs the request and leaks one process per call (5 stuck after a few requests). A scheduler waiting on it stops for good. We now kill it after 30 s. Requested: a network timeout and a `NOT_SIGNED_IN` error. | 30 min |
 | | | onboarding / docs / api / ai-stack / tokenized-stock | | | |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack

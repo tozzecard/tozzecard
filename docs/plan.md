@@ -191,11 +191,12 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [x] **Deploy API** — Railway Singapura, 28 Sep, merekam acuan penutupan sejak sesi regular 28 Sep
 - [x] Forecaster v1 — `apps/api/src/forecast.ts`
 - [x] Kalender bursa AS + perencana refill (3.3, 3.4) — `calendar.ts`, `refill.ts` (keputusan murni)
-- [ ] Scheduler yang mengeksekusi keputusan (butuh #22) + rebalance harian (3.5) + log keputusan (3.6)
+- [x] Scheduler eksekusi + log keputusan (3.6) — `scheduler.ts`, `AGENT_MODE=off|dry|live`, `/agent/decisions`, `/agent/preview?at=` (time travel)
+- [ ] Rebalance harian (3.5) di scheduler
 - [x] Server merchant demo B402 (402 → verify → settle) — kode + tes; live menunggu izin B402 di portal
 - [ ] DB: user, target alokasi, pembayaran, log keputusan
 - [ ] API untuk frontend: portofolio, saldo kartu, feed, strategi
-- [ ] Mode "time travel" untuk demo (Jumat 15:30 NY) — logika disimulasikan, tx tetap live
+- [x] Mode "time travel" untuk demo — `GET /agent/preview?at=` (keputusan saja; tx live lewat scheduler)
 - [ ] Kompilasi DX report
 
 ### Axel — Frontend & UX (+ pemilik demo video)

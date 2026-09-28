@@ -245,3 +245,17 @@ test("planRebalance: a full exit never sells more than the balance", () => {
   expect(Number(sell?.qty)).toBeLessThanOrEqual(balance);
   expect(sell?.qty).toBe("0.12345678");
 });
+
+test("cli.run kills a baw that never answers and throws TIMEOUT", async () => {
+  const { bin, timeoutMs } = cli;
+  cli.bin = ["bun", "-e", "await Bun.sleep(10_000)"];
+  cli.timeoutMs = 200;
+  try {
+    const t = Date.now();
+    const err = (await cli.run(["wallet", "status"]).catch((e) => e)) as BawError;
+    expect(err.name).toBe("TIMEOUT");
+    expect(Date.now() - t).toBeLessThan(2_000);
+  } finally {
+    Object.assign(cli, { bin, timeoutMs });
+  }
+});
