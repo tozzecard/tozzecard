@@ -24,7 +24,8 @@ export class BawError extends Error {
 }
 
 export const cli = {
-  bin: ["bun", BAW],
+  // Node, not Bun: Bun can't create secp256k1 ECDH keys, which `auth signin` needs.
+  bin: ["node", BAW],
   // baw never exits when signed out or when *.binance.com is unreachable (ISP DNS block), which
   // hung callers and leaked processes. Kill it and fail loudly instead.
   timeoutMs: 30_000,
