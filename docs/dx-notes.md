@@ -31,6 +31,8 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Fajar | onboarding | `baw auth signin` | `NETWORK_ERROR` "Connection refused (202.169.44.80:443)". Indonesian ISP hijacks DNS for *.binance.com (even with 1.1.1.1 set); real IP reachable via DoH. Needs WARP/VPN | — |
 | 2026-09-28 | Fajar | api | `baw market-order swap` 1 USDT→NVDAon | `30003001 ORDER_API_ERROR` "From token value greater than 5 USD". Means minimum is 5 USD; wording reads as the opposite. Min not documented in market-order.md | 5 min |
 | 2026-09-28 | Fajar | ai-stack | `baw wallet send` to non-address-book addr | Works as hoped: `351703` "recipient address is not in your address book". Allowlist enforced server-side, no contract needed | — |
+| 2026-09-28 | Fajar | ai-stack | `baw contract-call preview` (Developer Mode) `USDT.transfer(0x…dEaD, 0.01)` | Preview passes: parsed as `Send` to non-address-book recipient, `simulationCode 000000000`, `requireConfirmation: false`, no risks. Address book not checked at preview, so Developer Mode likely bypasses the allowlist | — |
+| 2026-09-28 | Fajar | ai-stack | `baw contract-call execute` (Developer Mode) `USDT.transfer(self, 0.01)` | Confirmed bypass: recipient not in address book, `wallet send` rejects it (`351703`) but `contract-call execute` broadcast and succeeded on-chain (tx `0xb315357fd7f16cbc23f4ca0aede0aa76ff763a1f2176fe20fc63cc7ff1fe751a`, status 1). Allowlist only holds while Developer Mode is off; not stated in docs | — |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack
 (Agentic Wallet / Skills / CLI), tokenized-stock specifics (liquidity, slippage, off-hours behaviour,
