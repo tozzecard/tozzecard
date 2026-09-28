@@ -236,3 +236,33 @@ Desain di atas bergantung pada hasil ini. **Spec dikunci setelah spike.**
 **Stretch (hanya jika inti selesai 6 Okt):** strategi natural language penuh, b402 (langganan / pembayaran merchant), BNB Agent Studio (identitas ERC-8004, target special prize), perbandingan bStocks vs Ondo untuk ticker yang sama.
 
 **Keluar scope:** kredit/pinjaman/skor (dihapus), vault/pool, kartu Visa/fisik, pull payment, perps, multichain.
+
+---
+
+## 12. Peran smart contract (keputusan: Fajar)
+
+Kartunya tetap berjalan di atas kontrak. Pertanyaannya bukan "ada kontrak atau tidak", tapi **kontrak mana yang kita tulis sendiri**. Default MVP: tidak ada. Semua lapisan pakai kontrak yang sudah jadi dan teraudit, karena dana live di mainnet dan juri menilai kedalaman integrasi API, bukan jumlah Solidity.
+
+| # | Lapisan | Kontrak | Tulis sendiri? | Status |
+|---|---|---|---|---|
+| C1 | Wallet kartu (passkey, limit belanja, kunci kartu) | Smart account dari SDK (mis. Safe / Kernel / Coinbase Smart Wallet) | ❌ | Wajib — ini "kartu"-nya |
+| C2 | Gasless (user tidak pegang BNB) | Paymaster (mis. MegaFuel) | ❌ | Tergantung G4 |
+| C3 | Agent hanya bisa kirim ke kartu | Policy Agentic Wallet, atau Safe + Zodiac Roles, atau vault kecil | ⚠️ Hanya jika G2 = tidak ada policy | Tergantung G2 |
+| C4 | Swap saham ↔ USDT | Router DEX (PancakeSwap dll.), calldata dari Trading API | ❌ | Wajib |
+| C5 | Fee revenue | Parameter `feePercent` Trading API | ❌ | Wajib |
+| C6 | Pembayaran ke merchant | Transfer ERC-20 biasa, atau `CardPayments` kecil | Opsional | Keputusan Fajar |
+| C7 | Identitas agent (ERC-8004) | Di-deploy oleh BNB Agent Studio | ❌ | Stretch |
+
+### C6 `CardPayments` — satu-satunya kontrak yang *mungkin* layak ditulis
+Router kecil (±30 baris), stateless, tidak pernah menyimpan dana:
+`pay(merchant, amount, ref)` → `transferFrom(card → merchant)` + emit `Paid(card, merchant, amount, ref)`.
+
+- **Untung:** setiap pembayaran jadi event dengan ID order → struk on-chain, riwayat belanja rapi untuk forecaster (tanpa menebak mana transfer yang belanja dan mana yang refill), dan di demo terlihat "kartu" sungguhan, bukan transfer wallet biasa.
+- **Rugi:** perlu approve USDT ke router (satu langkah UX, bisa di-batch di smart account), perlu tes + verifikasi, dan menambah permukaan bug di mainnet.
+- **Tanpa C6:** forecaster membedakan belanja dari transfer keluar kartu yang tujuannya bukan agent. Cukup untuk MVP.
+
+### Pertanyaan untuk Fajar
+1. **G2:** Agentic Wallet punya policy/allowlist tujuan transfer? Jika tidak, pilih Safe + Zodiac Roles (konfigurasi) atau vault sendiri — dan kenapa.
+2. **C1:** Smart account mana yang mendukung passkey **dan** jalan di BSC mainnet dengan paymaster? (bareng Axel, G4)
+3. **C6:** Tulis `CardPayments` atau transfer biasa? Jika ditulis: Foundry, tes, verifikasi di BscTrace, selesai sebelum 3 Okt, atau batal.
+4. Apakah ada kebutuhan lain yang memaksa kontrak custom yang belum terlihat di tabel ini?
