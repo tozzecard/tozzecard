@@ -77,3 +77,17 @@ test("sellForCard: Ondo falls back to token → USDT → USD1", async () => {
   expect(swaps).toEqual([USDT, USD1]);
   expect(r).toHaveLength(2);
 });
+
+test("swap finds the order when baw returns a different orderId (first-use approval)", async () => {
+  spyOn(cli, "run").mockImplementation((async (args: string[]) => {
+    const cmd = args.slice(0, 2).join(" ");
+    if (cmd === "wallet status") return { status: "CONNECTED" };
+    if (cmd === "wallet settings") return settings(false);
+    if (cmd === "market-order quote") return {};
+    if (cmd === "market-order swap") return { orderId: "6867" };
+    if (cmd === "market-order list") return { list: [{ orderId: "6868", status: "FINISHED" }] };
+    throw new Error(`unexpected ${cmd}`);
+  }) as typeof cli.run);
+  const r = await swap(USD1, NVDA, "5.1", "1", 0);
+  expect(r.order.orderId).toBe("6868");
+});

@@ -103,6 +103,7 @@ export async function swap(
 ): Promise<SwapResult> {
   await assertSafe();
   const q = await quote(from, to, qty);
+  const since = Date.now() - 10_000;
   const { orderId } = await cli.run<{ orderId: string }>([
     "market-order",
     "swap",
@@ -117,14 +118,22 @@ export async function swap(
     "--slippage",
     slippage,
   ]);
+  // The orderId from `swap` is not always the order that runs: on a token's first use (approval)
+  // it returned id N while the swap was listed as N+1, and `list --orderId N` stayed empty. So look
+  // the order up by pair + time, preferring an exact id match.
+  // ponytail: takes the newest order of this pair since submit; assumes one swap per pair at a time.
   for (const end = Date.now() + timeoutMs; ; ) {
     const { list } = await cli.run<{ list: Order[] }>([
       "market-order",
       "list",
-      "--orderId",
-      orderId,
+      "--fromToken",
+      from,
+      "--toToken",
+      to,
+      "--startTime",
+      String(since),
     ]);
-    const order = list[0];
+    const order = list.find((o) => o.orderId === orderId) ?? list[0];
     if (order?.status === "FINISHED") return { quote: q, order };
     if (order?.status === "FAILED") throw new Error(`swap ${orderId} FAILED`);
     if (Date.now() > end) throw new Error(`swap ${orderId} still PENDING after ${timeoutMs}ms`);
