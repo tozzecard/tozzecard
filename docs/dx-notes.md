@@ -38,6 +38,8 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Fajar | tokenized-stock | `baw market-order quote` NVDAon→USD1 / →U | `103 SERVICE_ERROR` "Unsupported token pair for Ondo trading, one side must be a supported stablecoin ({0})." USD1 and U are not accepted for Ondo, and the message leaves the `{0}` placeholder unfilled, so it never says which stablecoins are. bStock→USD1 works | 10 min |
 | 2026-09-28 | Fajar | ai-stack | BscScan / RPC receipts of `baw` swaps | Ondo swap tx `from` is a Binance relayer (agent pays 0 BNB), but a USDT→USD1 swap is sent by the agent wallet itself and costs ~0.0001 BNB. Who pays gas depends on the route and is not documented | 15 min |
 | 2026-09-28 | Fajar | ai-stack | `baw market-order list --orderId` right after `swap` | First `list` call can return no order yet, so a naive "stop when not PENDING" loop exits with nothing. Poll until FINISHED/FAILED explicitly | 5 min |
+| 2026-09-28 | Fajar | ai-stack | `baw wallet --help` (1.10.0) | No command lists the address book. The agent cannot check that the card is the only entry; only the user can, in the App. Requested capability: read-only `wallet address-book` | — |
+| 2026-09-28 | Fajar | ai-stack | `baw wallet send` with Developer Mode **on** | Still `351703`: the address book holds for `send` even in Developer Mode. Only `contract-call` bypasses it | — |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack
 (Agentic Wallet / Skills / CLI), tokenized-stock specifics (liquidity, slippage, off-hours behaviour,
