@@ -16,7 +16,8 @@ Scopes: `web`, `api`, `agent`, `binance`, `docs`, `ci`.
 
 - **Never commit a key.** Agent wallets sign real BSC mainnet funds. Secrets live in `.env` only.
 - **Every swap is dry-run first** through the Transaction API.
-- **USDT leaves the agent wallet only to the user's card address.**
+- **Stablecoin leaves the agent wallet only to the user's card address** (Agentic Wallet address book).
+- **No custom smart contracts.** Only Binance, BNB Chain or token-issuer contracts. Changing this needs a team decision (docs/plan.md §12).
 - **No mock numbers in the app.** Everything shown comes from the API or the chain.
 
 ## Developer Experience notes

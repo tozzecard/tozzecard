@@ -13,13 +13,13 @@ stock to pay for something over the weekend sells at a discount.
 Tozzecard splits the job in two:
 
 - **The agent wallet** holds your tokenized stocks (Ondo, bStocks). It buys, rebalances, and refills your card.
-- **The card** is a wallet you own (passkey, no seed phrase) that holds USDT for spending.
+- **The card** is a wallet you own (passkey, no seed phrase) that holds USD1 and pays through B402, Binance's gasless x402 rail. It never needs BNB.
 
 The agent learns how much you spend and when, and refills the card **while the market is open**,
 before you need it, selling whatever is overweight. One trade tops up the card and rebalances the
-portfolio. The agent can only ever send to your card. Nobody holds your money but you.
+portfolio. The agent can only ever send to your card: the Agentic Wallet address book, which only you can edit in the Binance App, holds nothing else. Nobody holds your money but you, and every contract involved is Binance's, BNB Chain's or the token issuer's.
 
-Full design: [`docs/plan.md`](docs/plan.md).
+Full design: [`docs/plan.md`](docs/plan.md). Evidence behind every technical claim: [`docs/research.md`](docs/research.md).
 
 ## Repository
 
@@ -29,7 +29,7 @@ Full design: [`docs/plan.md`](docs/plan.md).
 | [`apps/api`](apps/api) | Backend: market hours, spend forecaster, refill/rebalance scheduler, decision log (Bun + Hono) | Kiel |
 | [`packages/agent`](packages/agent) | Agent wallet execution: quote → dry-run → swap → refill | Fajar |
 | [`packages/binance`](packages/binance) | Binance Web3 API client (RWA Data, Market, Trading, Transaction, Wallet) | Kiel |
-| [`docs`](docs) | Plan, developer experience notes | All |
+| [`docs`](docs) | Plan, research, developer experience notes | All |
 
 ## Team
 
