@@ -155,10 +155,10 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 
 | # | Cek | Owner | Jika gagal |
 |---|---|---|---|
-| L1 | `baw` sign-in + swap Ondo/bStock → stablecoin di BSC mainnet | Fajar | Blocker — eskalasi Telegram builder |
-| L2 | `baw wallet send` ke alamat di luar address book ditolak | Fajar | Janji "agent hanya bisa mengisi" gugur — desain ulang |
-| L3 | `baw` swap langsung ke USD1; likuiditas $5–50 | Fajar | Dua langkah: → USDT → USD1 |
-| L4 | `baw` swap menerima fee/referrer | Fajar | Revenue via B402 (lihat §4) |
+| L1 | `baw` sign-in + swap Ondo/bStock → stablecoin di BSC mainnet | Fajar | ✅ 28 Sep. Beli USDT→NVDAon & jual NVDAon→USDT live, selesai ±6 dtk (tx `0x693f6e5a…`, `0x5f482834…`). Min order $5 |
+| L2 | `baw wallet send` ke alamat di luar address book ditolak | Fajar | ✅ 28 Sep, ditolak `351703`. **Hanya berlaku selama Developer Mode mati**: `contract-call` membobol address book (tx `0xb315357f…`). Agent menolak jalan bila Developer Mode aktif (#5) |
+| L3 | `baw` swap langsung ke USD1; likuiditas $5–50 | Fajar | ⚠️ 28 Sep. bStock → USD1 langsung bisa. **Ondo hanya ke USDT** (`103` "one side must be a supported stablecoin"), lalu USDT → USD1 (live, 5 → 5.0012). Likuiditas $5–50 cukup (#4) |
+| L4 | `baw` swap menerima fee/referrer | Fajar | ❌ 28 Sep. `market-order swap --help` tidak punya fee/referrer → revenue via B402 (§4) |
 | L5 | B402 end-to-end: key browser tanda tangan EIP-3009 USD1, settle, payer 0 BNB | Kiel + Axel | Fallback USDT + Permit2 (user butuh sedikit BNB sekali) |
 | L6 | WebAuthn PRF di Chrome & Safari iOS | Axel | Key dienkripsi PIN sebagai fallback |
 | L7 | Transfer Ondo nominal > 0 antar wallet non-KYC | Fajar | Fokus bStocks |
