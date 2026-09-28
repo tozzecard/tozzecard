@@ -81,7 +81,9 @@ test("sellForCard: Ondo falls back to token → USDT → USD1", async () => {
       return { orderId: String(swaps.length) };
     }
     if (cmd === "market-order list")
-      return { list: [{ status: "FINISHED", toTokenActualQty: "5.01" }] };
+      return {
+        list: [{ orderId: String(swaps.length), status: "FINISHED", toTokenActualQty: "5.01" }],
+      };
     throw new Error(`unexpected ${cmd}`);
   }) as typeof cli.run);
   const r = await sellForCard(NVDA, "0.0223");
@@ -148,7 +150,7 @@ test("rebalance scales buys down to the USDT the sells actually returned", async
     if (cmd === "wallet settings") return settings(false);
     if (cmd === "market-order quote") return {};
     if (cmd === "market-order swap") return { orderId: "1" };
-    if (cmd === "market-order list") return { list: [{ status: "FINISHED" }] };
+    if (cmd === "market-order list") return { list: [{ orderId: "1", status: "FINISHED" }] };
     throw new Error(`unexpected ${cmd}`);
   }) as typeof cli.run);
   const r = await rebalance({ [NVDA]: 0.5, [NVDAB]: 0.5 });
@@ -177,4 +179,47 @@ test("session reports expiry times and Developer Mode; signed out → connected:
   });
   run.mockResolvedValue({ status: "UNCONNECTED" } as never);
   expect(await session()).toEqual({ connected: false });
+});
+
+test("swap ignores an older order of the same pair (a retry must not end on the old FAILED)", async () => {
+  const lists = [
+    [{ orderId: "100", status: "FAILED" }],
+    [
+      { orderId: "100", status: "FAILED" },
+      { orderId: "102", status: "FINISHED" },
+    ],
+  ];
+  spyOn(cli, "run").mockImplementation((async (args: string[]) => {
+    const cmd = args.slice(0, 2).join(" ");
+    if (cmd === "wallet status") return { status: "CONNECTED" };
+    if (cmd === "wallet settings") return settings(false);
+    if (cmd === "market-order quote") return {};
+    if (cmd === "market-order swap") return { orderId: "101" };
+    if (cmd === "market-order list") return { list: lists.shift() ?? [] };
+    throw new Error(`unexpected ${cmd}`);
+  }) as typeof cli.run);
+  const r = await swap(NVDA, USDT, "0.02", "1", 0);
+  expect(r.order.orderId).toBe("102");
+});
+
+test("planRebalance: exiting a position (weight 0) sells the exact balance, never more", () => {
+  const nvda = { ...h(NVDA, 28.4, 230), balance: "0.123456789999" };
+  const t = planRebalance([nvda, h(NVDAB, 30, 227)], { [NVDA]: 0, [NVDAB]: 1 });
+  expect(t[0]).toMatchObject({ side: "sell", token: NVDA, qty: "0.123456789999" });
+});
+
+test("planRebalance: partial sells round down", () => {
+  const t = planRebalance([h(NVDA, 70, 3), h(NVDAB, 30, 227)], { [NVDA]: 0.5, [NVDAB]: 0.5 });
+  // 20 / 3 = 6.666666666… → floor, not 6.66666667
+  expect(t[0].qty).toBe("6.66666666");
+});
+
+test("cli.run: non-JSON output becomes an error with context", async () => {
+  const spawn = spyOn(Bun, "spawn").mockReturnValue({
+    stdout: new Response("npm WARN something broke").body,
+    stderr: new Response("").body,
+    exited: Promise.resolve(1),
+  } as never);
+  expect(cli.run(["wallet", "status"])).rejects.toThrow("exited 1 with non-JSON output: npm WARN");
+  spawn.mockRestore();
 });
