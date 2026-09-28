@@ -154,6 +154,16 @@ export function createMerchant(opts: { client: BinanceClient; db: Database; payT
     get,
     pay,
     formatAmount: (o: Order) => formatUnits(BigInt(o.amount), USD1.decimals),
+    /** Paid orders of one payer, as spends for the forecaster. */
+    spendsOf: (payer: string) =>
+      (
+        db
+          .query("SELECT amount, created_at FROM orders WHERE status = 'paid' AND lower(payer) = ?")
+          .all(payer.toLowerCase()) as { amount: string; created_at: number }[]
+      ).map((r) => ({
+        at: r.created_at,
+        usd: Number(formatUnits(BigInt(r.amount), USD1.decimals)),
+      })),
   };
 }
 
