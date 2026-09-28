@@ -24,6 +24,13 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Kiel | api | B402 vs every other module | B402 wraps every request in `{"body": {...}}` and answers `{status, type, code: "000000000", errorData, data}`, while RWA/Trading answer `{code: 0, msg, data, success}`. One client has to handle two envelopes. | 10 min |
 | 2026-09-28 | Kiel | docs | b402-api/payment-methods | USD1's EIP-712 domain isn't listed (we read it on-chain: `eip712Domain()` → "World Liberty Financial USD", version "1"). The docs say to read it from `/supported`, which a key needs B402 permission to call, so it cannot be checked before applying. | 10 min |
 | | | onboarding / docs / api / ai-stack / tokenized-stock | | | |
+| 2026-09-28 | Fajar | ai-stack | binance-skills-hub `binance-agentic-wallet/references/market-order.md` § `market-order swap` | `baw market-order swap` has no `feePercent` / referrer param, so integrator fee (plan §4) is impossible through Agentic Wallet swaps | — |
+| 2026-09-28 | Fajar | ai-stack | same, § `market-order swap` | No dry-run/simulate flag on swap; only `quote`. Simulation exists only for `contract-call preview` (Developer Mode) | — |
+| 2026-09-28 | Fajar | ai-stack | `references/wallet-setting.md` § Changing Settings | Policy (address book, dailyLimit, token scope) is read-only from CLI, App-only. Can't provision per-user allowlist programmatically | — |
+| 2026-09-28 | Fajar | ai-stack | `@binance/agentic-wallet@1.10.0` dist | Session dir overridable via undocumented `BINANCE_BAW_DIR`, but session id goes to OS keychain (keytar) first, one slot per machine, so multi-wallet on one host may collide | — |
+| 2026-09-28 | Fajar | onboarding | `baw auth signin` | `NETWORK_ERROR` "Connection refused (202.169.44.80:443)". Indonesian ISP hijacks DNS for *.binance.com (even with 1.1.1.1 set); real IP reachable via DoH. Needs WARP/VPN | — |
+| 2026-09-28 | Fajar | api | `baw market-order swap` 1 USDT→NVDAon | `30003001 ORDER_API_ERROR` "From token value greater than 5 USD". Means minimum is 5 USD; wording reads as the opposite. Min not documented in market-order.md | 5 min |
+| 2026-09-28 | Fajar | ai-stack | `baw wallet send` to non-address-book addr | Works as hoped: `351703` "recipient address is not in your address book". Allowlist enforced server-side, no contract needed | — |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack
 (Agentic Wallet / Skills / CLI), tokenized-stock specifics (liquidity, slippage, off-hours behaviour,
