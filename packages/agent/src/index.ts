@@ -25,7 +25,8 @@ export class BawError extends Error {
 
 export const cli = {
   async run<T>(args: string[]): Promise<T> {
-    const proc = Bun.spawn(["bun", BAW, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
+    // Node, not Bun: Bun can't create secp256k1 ECDH keys, which `auth signin` needs.
+    const proc = Bun.spawn(["node", BAW, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
     const out =
       (await new Response(proc.stdout).text()) || (await new Response(proc.stderr).text());
     await proc.exited;
