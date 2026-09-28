@@ -7,6 +7,8 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "test": "bun test --pass-with-no-tests"
+    "test": "bun test --pass-with-no-tests",
+    "first-call": "bun --env-file=../../.env scripts/first-call.ts",
+    "price-check": "bun --env-file=../../.env scripts/price-check.ts"
   }
 }

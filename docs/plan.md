@@ -100,7 +100,7 @@ JIKA bursa tutup DAN saldo < floor (darurat):
 ```
 
 - **Forecaster v1:** rata-rata belanja per bucket (hari kerja vs weekend) dari N minggu terakhir, fallback ke estimasi onboarding. Tanpa ML.
-- `spread = |tokenPrice − referencePrice × tokenToShareRatio| / (referencePrice × tokenToShareRatio)`. Rumus rasio dicek saat spike.
+- **Spread (hasil G6, research.md §5):** `referencePrice` dari API diturunkan dari harga on-chain, jadi tidak bisa jadi acuan independen. Backend menyimpan acuannya sendiri: harga per saham (`rwa/price` `referencePrice`) saat sesi regular terakhir tutup. `spread = (quote_per_token − close_ref × ratio) / (close_ref × ratio)`, dengan `quote_per_token` dari Trading API (harga yang benar-benar bisa dieksekusi). Jangan pakai `rwa/tokens.tokenPrice` atau `underlying-market.referencePrice` (salah untuk token dengan ratio ≠ 1).
 - Jika swap langsung ke USD1 tidak tersedia (L3): swap ke USDT lalu USDT → USD1.
 - Daily limit Agentic Wallet membatasi total refill per hari — ini fitur keamanan, tampilkan di UI.
 - Semua threshold = config, dikalibrasi di demo.
@@ -163,8 +163,8 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 | L6 | WebAuthn PRF di Chrome & Safari iOS | Axel | Key dienkripsi PIN sebagai fallback |
 | L7 | Transfer Ondo nominal > 0 antar wallet non-KYC | Fajar | Fokus bStocks |
 | L8 | Kelayakan dari Indonesia: akun Binance + trading bStock/Ondo | Semua | Pilih issuer yang tersedia |
-| G5 | API key aktif, HMAC signing, call pertama (catat berapa lama) | Kiel | Blocker |
-| G6 | Rumus spread + perilaku `referencePrice` saat weekend | Kiel | — |
+| G5 | API key aktif, HMAC signing, call pertama (catat berapa lama) | Kiel | ✅ 28 Sep, 282 ms, lolos di percobaan pertama |
+| G6 | Rumus spread + perilaku `referencePrice` saat weekend | Kiel | ✅ rumus terkunci (research.md §5); perilaku weekend diamati Sabtu 3 Okt |
 
 ---
 
@@ -179,7 +179,9 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [ ] Transaksi live pertama sebelum 3 Okt
 
 ### Kiel — Backend & data (+ pemilik DX report)
-- [ ] G5, G6, L5 (sisi server)
+- [x] G5 — client HMAC `packages/binance`
+- [x] G6 — rumus spread (weekend diamati 3 Okt)
+- [ ] L5 (sisi server)
 - [ ] Client Binance Web3 API (HMAC, retry, error mapping)
 - [ ] Market-hours & spread service (RWA Data)
 - [ ] Forecaster v1, scheduler refill (3.3) + rebalance (3.5), pemilihan saham (3.4)

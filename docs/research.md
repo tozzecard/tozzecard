@@ -23,7 +23,7 @@ Anything marked *unverified* must be tested live before we rely on it (see "Live
 | Auth | HMAC-SHA256, headers `X-OC-APIKEY`, `X-OC-TIMESTAMP`, `X-OC-SIGN`; optional IP whitelist; VPN/proxy rejected (40302); US/UK/CA/NL blocked. | [BN] /authentication |
 | Wallet API | Read-only (balances, tx history). No wallet creation, signing or policies. | [BN] wallet-api |
 | Transaction API | Broadcasts a **client-signed** tx; optional `enableMevProtection`; screens risky/sanctioned addresses (40311–40314). No gas sponsorship. | [BN] transaction-api |
-| Trading API | Returns calldata we sign; router for chain 56 `0xB44446b0c8E56988c34f7Ff73Ae904982b5FdDA5` (*recheck*); `feePercent` + referrer supported. **Ondo sells go through RFQ** (EIP-712 sign → `POST /order/submit` → poll). | [BN] trading-api, supported-chains |
+| Trading API | Returns calldata we sign; min order $5 (40375); router for chain 56 `0xB44446b0c8E56988c34f7Ff73Ae904982b5FdDA5` (*recheck*); `feePercent` + referrer supported. **Ondo sells go through RFQ** (EIP-712 sign → `POST /order/submit` → poll). | [BN] trading-api, supported-chains |
 | **B402** | Binance's x402 facilitator, **BSC only**. "B402 submits the settlement transaction while sponsoring network gas. Funds move directly to the merchant's configured receiving address." Merchant-server API; `payTo` write-once per project. | [BN] b402-api/introduction |
 | B402 tokens | **U** and **USD1**: EIP-3009, no approval, gasless for payer. **USDT/USDC**: Permit2 only, payer approves Permit2 once (costs gas). Facilitator signer/spender addresses not published, read from `/api/v2/b402/supported`. | [BN] b402-api/payment-methods |
 | Card / merchant / on-ramp | Not documented anywhere. | [BN] llms.txt |
@@ -45,6 +45,23 @@ Anything marked *unverified* must be tested live before we rely on it (see "Live
 | Ondo | On BSC mainnet, transferable outside the US; acquiring prohibited for US persons and listed countries; redemption needs KYC. Token has `compliance()` + pause manager; zero-value transfer between fresh addresses succeeded → looks like blocklist, *unverified for non-zero*. | [ISS] docs.ondo.finance · [CHAIN] |
 | bStocks | Issued by Binance, BEP-20, withdrawable "to any BSC-compatible wallet". "Only open to permitted-jurisdiction qualified users." Contract restrictions *unverified*. | [BNB] · [BN] campaign.md |
 | xStocks | BNB Chain announced live (2026-04-30); issuer FAQ doesn't list BNB Chain; not in RWA Data API. *Unverified.* | [BNB] · [ISS] |
+
+## 5. Prices: what the API numbers really are (G6, measured 2026-09-28, premarket)
+
+Measured with `packages/binance/scripts/price-check.ts` against a Trading API sell quote of ~$10.
+
+| Field | What it is | Trust |
+|---|---|---|
+| `rwa/price` `tokenPrice` | On-chain price of one token, within 0.23% of the executable quote | ✅ use this |
+| `rwa/price` `referencePrice` | `tokenPrice ÷ tokenToShareRatio`: per-share price **derived from on-chain**, not a market quote | ✅ as per-share view, ❌ as independent reference |
+| `rwa/tokens` `tokenPrice` | True price × ratio (bug) | ❌ |
+| `rwa/tokens` `referencePrice` | Equals the true token price (mislabelled) | ⚠️ |
+| `rwa/underlying-market` `referencePrice` | True ÷ ratio² (bug) | ❌ |
+| Trading API quote | What you actually get, incl. price impact; min order $5 (40375) | ✅ ground truth |
+
+**Consequence:** the Binance stack has no independent underlying price. Tozzecard records its own
+reference: the per-share price at the last regular-session close (`nextCloseTime`). Over a weekend
+the spread is the executable quote vs that frozen close. See plan §3.3.
 
 ## Live checks (must pass before the design is final)
 
