@@ -1,5 +1,16 @@
 import { afterEach, expect, mock, spyOn, test } from "bun:test";
-import { BawError, cli, planRebalance, rebalance, refill, sellForCard, swap, USD1, USDT } from ".";
+import {
+  BawError,
+  cli,
+  planRebalance,
+  rebalance,
+  refill,
+  sellForCard,
+  session,
+  swap,
+  USD1,
+  USDT,
+} from ".";
 
 const NVDA = "0xa9ee28c80f960b889dfbd1902055218cba016f75";
 const settings = (enabled: boolean) => ({ devMode: { enabled } });
@@ -145,4 +156,25 @@ test("rebalance scales buys down to the USDT the sells actually returned", async
     ["sell", (20 / 230).toFixed(8)],
     ["buy", "19.000000"],
   ]);
+});
+
+test("session reports expiry times and Developer Mode; signed out → connected: false", async () => {
+  const run = spyOn(cli, "run").mockImplementation((async (args: string[]) =>
+    args[1] === "status"
+      ? { status: "CONNECTED" }
+      : {
+          devMode: { enabled: false },
+          sessionExpireTime: "2026-09-30T18:34:05+07:00",
+          signInMaxTime: "2026-10-05T18:34:05+07:00",
+          quotaLeft: 49990,
+        }) as typeof cli.run);
+  expect(await session()).toEqual({
+    connected: true,
+    devMode: false,
+    sessionExpireTime: "2026-09-30T18:34:05+07:00",
+    signInMaxTime: "2026-10-05T18:34:05+07:00",
+    quotaLeft: 49990,
+  });
+  run.mockResolvedValue({ status: "UNCONNECTED" } as never);
+  expect(await session()).toEqual({ connected: false });
 });
