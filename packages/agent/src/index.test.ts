@@ -243,5 +243,16 @@ test("planRebalance: a full exit never sells more than the balance", () => {
   );
   const sell = t.find((x) => x.side === "sell");
   expect(Number(sell?.qty)).toBeLessThanOrEqual(balance);
-  expect(sell?.qty).toBe("0.12345678");
+  // Exact balance as baw reported it: no float round-trip, no dust left behind.
+  expect(sell?.qty).toBe(String(balance));
+});
+
+test("cli.run: non-JSON output becomes an error with context", async () => {
+  const spawn = spyOn(Bun, "spawn").mockReturnValue({
+    stdout: new Response("npm WARN something broke").body,
+    stderr: new Response("").body,
+    exited: Promise.resolve(1),
+  } as never);
+  expect(cli.run(["wallet", "status"])).rejects.toThrow("exited 1 with non-JSON output: npm WARN");
+  spawn.mockRestore();
 });

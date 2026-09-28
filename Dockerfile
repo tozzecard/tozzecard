@@ -15,7 +15,7 @@ COPY apps/api apps/api
 ENV NODE_ENV=production DB_PATH=/data/tozzecard.sqlite
 # Agentic Wallet session on the volume, so a redeploy doesn't sign the agent out. baw encrypts it
 # with a key derived from the MAC address, which changes every deploy: set BINANCE_INSTANCE_ID
-# (a secret, Railway variable) to keep the key stable.
+# (a secret, passed at `docker run`, never in the image) to keep the key stable.
 ENV BINANCE_BAW_DIR=/data/baw
 EXPOSE 8787
 CMD ["bun", "apps/api/src/index.ts"]
