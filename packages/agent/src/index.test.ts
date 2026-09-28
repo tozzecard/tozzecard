@@ -81,7 +81,9 @@ test("sellForCard: Ondo falls back to token → USDT → USD1", async () => {
       return { orderId: String(swaps.length) };
     }
     if (cmd === "market-order list")
-      return { list: [{ status: "FINISHED", toTokenActualQty: "5.01" }] };
+      return {
+        list: [{ orderId: String(swaps.length), status: "FINISHED", toTokenActualQty: "5.01" }],
+      };
     throw new Error(`unexpected ${cmd}`);
   }) as typeof cli.run);
   const r = await sellForCard(NVDA, "0.0223");
@@ -148,7 +150,7 @@ test("rebalance scales buys down to the USDT the sells actually returned", async
     if (cmd === "wallet settings") return settings(false);
     if (cmd === "market-order quote") return {};
     if (cmd === "market-order swap") return { orderId: "1" };
-    if (cmd === "market-order list") return { list: [{ status: "FINISHED" }] };
+    if (cmd === "market-order list") return { list: [{ orderId: "1", status: "FINISHED" }] };
     throw new Error(`unexpected ${cmd}`);
   }) as typeof cli.run);
   const r = await rebalance({ [NVDA]: 0.5, [NVDAB]: 0.5 });
@@ -177,4 +179,69 @@ test("session reports expiry times and Developer Mode; signed out → connected:
   });
   run.mockResolvedValue({ status: "UNCONNECTED" } as never);
   expect(await session()).toEqual({ connected: false });
+});
+
+test("swap ignores an older order of the same pair (failed attempt before a retry)", async () => {
+  const lists = [
+    [{ orderId: "5", status: "FAILED" }],
+    [
+      { orderId: "6", status: "FINISHED" },
+      { orderId: "5", status: "FAILED" },
+    ],
+  ];
+  spyOn(cli, "run").mockImplementation((async (args: string[]) => {
+    const cmd = args.slice(0, 2).join(" ");
+    if (cmd === "wallet status") return { status: "CONNECTED" };
+    if (cmd === "wallet settings") return settings(false);
+    if (cmd === "market-order quote") return {};
+    if (cmd === "market-order swap") return { orderId: "6" };
+    if (cmd === "market-order list") return { list: lists.shift() };
+    throw new Error(`unexpected ${cmd}`);
+  }) as typeof cli.run);
+  const r = await swap(USDT, NVDA, "5", "1", 0);
+  expect(r.order.orderId).toBe("6");
+});
+
+test("sellForCard: stops with a clear error when the USDT leg reports no amount", async () => {
+  const swaps: string[] = [];
+  spyOn(cli, "run").mockImplementation((async (args: string[]) => {
+    const cmd = args.slice(0, 2).join(" ");
+    const to = args[args.indexOf("--toToken") + 1];
+    if (cmd === "wallet status") return { status: "CONNECTED" };
+    if (cmd === "wallet settings") return settings(false);
+    if (cmd === "market-order quote") {
+      if (to === USD1) throw new BawError(103, "SERVICE_ERROR", "Unsupported token pair");
+      return {};
+    }
+    if (cmd === "market-order swap") {
+      swaps.push(to);
+      return { orderId: "1" };
+    }
+    if (cmd === "market-order list") return { list: [{ orderId: "1", status: "FINISHED" }] };
+    throw new Error(`unexpected ${cmd}`);
+  }) as typeof cli.run);
+  expect(sellForCard(NVDA, "0.0223")).rejects.toThrow("no USDT amount");
+  await Bun.sleep(0);
+  expect(swaps).toEqual([USDT]); // never swapped "0" into USD1
+});
+
+test("planRebalance: a full exit never sells more than the balance", () => {
+  // 0.123456789999 NVDA at 230: toFixed(8) would round up to 0.12345679
+  const balance = 0.123456789999;
+  const t = planRebalance(
+    [
+      {
+        symbol: "",
+        address: NVDA,
+        balance: String(balance),
+        price: "230",
+        value: String(balance * 230),
+      },
+      h(NVDAB, 30, 227),
+    ],
+    { [NVDA]: 0, [NVDAB]: 1 },
+  );
+  const sell = t.find((x) => x.side === "sell");
+  expect(Number(sell?.qty)).toBeLessThanOrEqual(balance);
+  expect(sell?.qty).toBe("0.12345678");
 });

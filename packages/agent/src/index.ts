@@ -149,8 +149,8 @@ export async function swap(
   ]);
   // The orderId from `swap` is not always the order that runs: on a token's first use (approval)
   // it returned id N while the swap was listed as N+1, and `list --orderId N` stayed empty. So look
-  // the order up by pair + time, preferring an exact id match.
-  // ponytail: takes the newest order of this pair since submit; assumes one swap per pair at a time.
+  // the order up by pair + time: the exact id, else a later one. Never an earlier one: after a
+  // failed swap and an immediate retry, the old FAILED order would decide the new swap's outcome.
   for (const end = Date.now() + timeoutMs; ; ) {
     const { list } = await cli.run<{ list: Order[] }>([
       "market-order",
@@ -162,11 +162,20 @@ export async function swap(
       "--startTime",
       String(since),
     ]);
-    const order = list.find((o) => o.orderId === orderId) ?? list[0];
+    const order = list.find((o) => o.orderId === orderId) ?? list.find((o) => isLater(o, orderId));
     if (order?.status === "FINISHED") return { quote: q, order };
     if (order?.status === "FAILED") throw new Error(`swap ${orderId} FAILED`);
     if (Date.now() > end) throw new Error(`swap ${orderId} still PENDING after ${timeoutMs}ms`);
     await Bun.sleep(pollMs);
+  }
+}
+
+/** Order ids are numeric strings that grow (observed N returned, N+1 executed). */
+function isLater(o: Order, orderId: string) {
+  try {
+    return BigInt(o.orderId) > BigInt(orderId);
+  } catch {
+    return false;
   }
 }
 
@@ -185,7 +194,13 @@ export async function sellForCard(token: string, amount: string): Promise<SwapRe
     if (!(e instanceof BawError && e.code === 103)) throw e;
   }
   const toUsdt = await sell(token, amount);
-  return [toUsdt, await swap(USDT, USD1, toUsdt.order.toTokenActualQty ?? "0")];
+  const usdt = toUsdt.order.toTokenActualQty;
+  // The stock is sold and the USDT sits in the agent wallet; the caller can finish USDT → USD1.
+  if (!usdt)
+    throw new Error(
+      `sold ${token} (order ${toUsdt.order.orderId}) but baw reported no USDT amount`,
+    );
+  return [toUsdt, await swap(USDT, USD1, usdt)];
 }
 
 /** Send USD1 to the card. Binance rejects any address not in the address book (`351703`). */
@@ -244,14 +259,18 @@ export function planRebalance(
   const sells: Trade[] = gaps
     .filter((g) => -g.usd >= MIN_ORDER_USD)
     .map((g) => {
-      const price = Number(held.get(g.a)?.price);
-      return { token: g.a, side: "sell", usd: -g.usd, qty: (-g.usd / price).toFixed(8) };
+      const h = held.get(g.a);
+      // Round down and cap at the balance: toFixed rounds half up and can ask for more than held.
+      const units = Math.min(-g.usd / Number(h?.price), Number(h?.balance ?? 0));
+      return { token: g.a, side: "sell", usd: -g.usd, qty: floorTo(units, 8) };
     });
   const buys: Trade[] = gaps
     .filter((g) => g.usd >= MIN_ORDER_USD)
     .map((g) => ({ token: g.a, side: "buy", usd: g.usd, qty: g.usd.toFixed(6) }));
   return [...sells, ...buys];
 }
+
+const floorTo = (x: number, dp: number) => (Math.floor(x * 10 ** dp) / 10 ** dp).toFixed(dp);
 
 export const holdings = () =>
   cli.run<Holding[]>(["wallet", "balance", "--binanceChainId", BSC_CHAIN_ID]);
