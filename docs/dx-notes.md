@@ -40,6 +40,7 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Fajar | ai-stack | `baw market-order list --orderId` right after `swap` | First `list` call can return no order yet, so a naive "stop when not PENDING" loop exits with nothing. Poll until FINISHED/FAILED explicitly | 5 min |
 | 2026-09-28 | Fajar | ai-stack | `baw wallet --help` (1.10.0) | No command lists the address book. The agent cannot check that the card is the only entry; only the user can, in the App. Requested capability: read-only `wallet address-book` | — |
 | 2026-09-28 | Fajar | ai-stack | `baw wallet send` with Developer Mode **on** | Still `351703`: the address book holds for `send` even in Developer Mode. Only `contract-call` bypasses it | — |
+| 2026-09-28 | Fajar | ai-stack | `baw market-order swap` USD1→NVDAB (first use of USD1) | `swap` returned orderId `26092800001922406867`, but the order that ran is `…6868` (FINISHED, tx `0x306caa7cae0ee15b5d7bf3832724cd7523393d30a9e0e9bd73b9f72225180dfc`). `list --orderId …6867` stays empty forever, so polling by the returned id reports a stuck swap that actually succeeded. Workaround: list by `--fromToken/--toToken/--startTime` | 20 min |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack
 (Agentic Wallet / Skills / CLI), tokenized-stock specifics (liquidity, slippage, off-hours behaviour,
