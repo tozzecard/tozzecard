@@ -14,6 +14,10 @@ Be specific: URL + section, exact error text, minutes lost. No summaries, no AI 
 | 2026-09-28 | Kiel | api | GET /build/api/v1/dex/aggregator/quote | Quoting 1 SOXSon ($0.35) returns HTTP **200** with `{"code":40375,"msg":"Minimum order amount is 5 USD."}`. Minimum not documented on the quote page; an error with HTTP 200. | 5 min |
 | 2026-09-28 | Kiel | api | several RWA endpoints | `42900 Rate limit exceeded` after ~6 calls in under a second across *different* endpoints, although the documented default is 5 RPS per endpoint. | 5 min |
 | 2026-09-28 | Kiel | docs | trading-api, quote parameters | `feePercent` pairs with `feeSource` (FROM_TOKEN/TO_TOKEN) on the quote page, while the swap docs describe `fromTokenReferrerWalletAddress` / `toTokenReferrerWalletAddress`. Two naming schemes for the same fee. | — |
+| 2026-09-28 | Kiel | api | GET /build/api/v1/dex/market/rwa/price, `tokenContractAddresses` "max 100" | 100 BSC addresses → **HTTP 414 URI Too Long**, empty body (not the JSON envelope). 80 works (~3.5 KB URL). The documented maximum cannot be used on a GET; either accept POST or document a lower limit. | 15 min |
+| 2026-09-28 | Kiel | tokenized-stock | rwa/tokens `statusInfo` | All 46 bStock tokens on BSC return `marketStatus: null`, `nextOpenTime: null`, `nextCloseTime: null`, `openState: true`: no market-hours data for bStocks at all. Ondo tokens do have it. We borrow SPYon's status for bStocks. | 10 min |
+| 2026-09-28 | Kiel | docs | rwa-data, market status values | Docs list `pause`; the API sends `paused` (32 Ondo tokens, reasonCode `MARKET_PAUSED`). 61 Ondo tokens are `premarket` with reasonCode `UNSUPPORTED`, which is not explained. | 5 min |
+| 2026-09-28 | Kiel | tokenized-stock | rwa/price, NVDAB vs NVDAon | Same underlying, premarket: NVDAB (bStock) 227.70 vs NVDAon (Ondo) 228.06 per token, 0.16% apart; ratios 1.00078 vs 1.00172, so per share 227.52 vs 227.67. | — |
 | | | onboarding / docs / api / ai-stack / tokenized-stock | | | |
 
 Areas map to the report sections: onboarding, documentation issues, API pitfalls, AI stack

@@ -183,7 +183,8 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [x] G6 — rumus spread (weekend diamati 3 Okt)
 - [ ] L5 (sisi server)
 - [ ] Client Binance Web3 API (HMAC, retry, error mapping)
-- [ ] Market-hours & spread service (RWA Data)
+- [x] Market-hours & spread service (RWA Data) — `apps/api/src/market.ts`, `GET /market/:symbol`
+- [ ] **Deploy API sebelum Jumat 2 Okt 20:00 UTC** supaya acuan penutupan Jumat terekam untuk demo & pengamatan weekend
 - [ ] Forecaster v1, scheduler refill (3.3) + rebalance (3.5), pemilihan saham (3.4)
 - [ ] Server merchant demo B402 (402 → verify → settle)
 - [ ] DB: user, target alokasi, pembayaran, log keputusan

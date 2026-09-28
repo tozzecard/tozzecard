@@ -7,14 +7,18 @@ export const BASE_URL = "https://web3.binance.com";
 // Must be in both the URL and the signed path, or the API answers 40102.
 const PREFIX = "/build";
 
-/** Market status values returned in RWA Data `statusInfo.marketStatus`. */
+/**
+ * `statusInfo.marketStatus` as observed. Docs list "pause"; the API sends "paused".
+ * bStock tokens send null (no market-hours data at all).
+ */
 export type MarketStatus =
   | "premarket"
   | "regular"
   | "postmarket"
   | "overnight"
   | "closed"
-  | "pause";
+  | "pause"
+  | "paused";
 
 export type Query = Record<string, string | number | boolean | undefined>;
 
@@ -91,6 +95,8 @@ export function createClient({
 }
 
 export type BinanceClient = ReturnType<typeof createClient>;
+
+export * from "./rwa";
 
 export function clientFromEnv(env = process.env): BinanceClient {
   const apiKey = env.BINANCE_WEB3_API_KEY;
