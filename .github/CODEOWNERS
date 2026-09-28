@@ -1,0 +1,8 @@
+# Area owners review every PR that touches their area. See README "Team".
+# TODO: replace the apps/web owner with Axel's GitHub handle once he joins the org.
+*                   @yeheskieltame
+/apps/web/          @yeheskieltame
+/apps/api/          @yeheskieltame
+/packages/binance/  @yeheskieltame
+/packages/agent/    @FjrREPO
+/docs/              @yeheskieltame @FjrREPO

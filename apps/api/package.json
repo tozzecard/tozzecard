@@ -1,0 +1,16 @@
+{
+  "name": "@tozzecard/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@tozzecard/agent": "workspace:*",
+    "@tozzecard/binance": "workspace:*",
+    "hono": "^4.10.0"
+  }
+}

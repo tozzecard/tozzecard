@@ -1,0 +1,12 @@
+{
+  "name": "@tozzecard/binance",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "bun test --pass-with-no-tests"
+  }
+}

@@ -1,0 +1,18 @@
+node_modules/
+.next/
+.turbo/
+dist/
+out/
+*.tsbuildinfo
+coverage/
+
+# secrets: never commit a real key, agent wallets sign real mainnet funds
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+*.log
+.DS_Store
+.vercel

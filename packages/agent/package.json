@@ -1,0 +1,15 @@
+{
+  "name": "@tozzecard/agent",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@tozzecard/binance": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "bun test --pass-with-no-tests"
+  }
+}
