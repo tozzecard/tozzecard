@@ -54,4 +54,22 @@ bun dev                # web on :3000, api on :8787
 | `bun run lint` / `bun run format` | Biome |
 | `bun test` | Tests |
 
+## Deployment
+
+| Service | Where | URL |
+| --- | --- | --- |
+| `apps/api` | Railway, Singapore, 5 GB volume at `/data` (SQLite) | https://api-production-c393.up.railway.app |
+
+The API polls Binance every minute and keeps the last regular-session price as the close reference,
+so it has to run continuously. Singapore because the Binance Web3 API refuses US/UK/CA/NL traffic.
+
+```bash
+railway link            # project "tozzecard", service "api"
+railway up --service api --ci
+```
+
+Build: [`Dockerfile`](Dockerfile), health check and restart policy: [`railway.json`](railway.json).
+Region is set on the service (`railway scale --service api southeast-asia=1`), not in `railway.json`:
+a `multiRegionConfig` there deployed without mounting the volume. Secrets live in Railway variables, never in the repo.
+
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a PR.

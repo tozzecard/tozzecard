@@ -75,4 +75,5 @@ if (payTo) {
   console.warn("MERCHANT_PAY_TO not set: /merchant routes disabled");
 }
 
-export default { port: Number(process.env.API_PORT ?? 8787), fetch: app.fetch };
+// PORT is set by the host (Railway); API_PORT for local runs.
+export default { port: Number(process.env.PORT ?? process.env.API_PORT ?? 8787), fetch: app.fetch };
