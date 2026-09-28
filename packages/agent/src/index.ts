@@ -176,3 +176,79 @@ export async function refill(cardAddress: string, usd1: string): Promise<string>
   ]);
   return txHash;
 }
+
+export interface Holding {
+  symbol: string;
+  address: string;
+  balance: string;
+  price: string;
+  value: string;
+}
+
+export interface Trade {
+  token: string;
+  side: "sell" | "buy";
+  usd: number;
+  /** Token units for sells, USDT for buys, as `baw --fromTokenQty` expects. */
+  qty: string;
+}
+
+/**
+ * Pure: trades that bring `holdings` back to `targets` (address → weight, sums to 1).
+ * Idle USDT is part of the portfolio with weight 0. Returns [] unless some token drifts more
+ * than `drift` (absolute weight). Legs under MIN_ORDER_USD are skipped. Sells come first.
+ */
+export function planRebalance(
+  holdings: Holding[],
+  targets: Record<string, number>,
+  drift = 0.05,
+): Trade[] {
+  const lc = (a: string) => a.toLowerCase();
+  const held = new Map(holdings.map((h) => [lc(h.address), h]));
+  const tokens = Object.keys(targets).map(lc);
+  const target = new Map(Object.entries(targets).map(([a, w]) => [lc(a), w]));
+  const value = (a: string) => Number(held.get(a)?.value ?? 0);
+  const total = tokens.reduce((s, a) => s + value(a), 0) + value(lc(USDT));
+  if (total === 0) return [];
+  const gaps = tokens.map((a) => ({ a, usd: (target.get(a) ?? 0) * total - value(a) }));
+  if (!gaps.some((g) => Math.abs(g.usd) / total > drift)) return [];
+  const sells: Trade[] = gaps
+    .filter((g) => -g.usd >= MIN_ORDER_USD)
+    .map((g) => {
+      const price = Number(held.get(g.a)?.price);
+      return { token: g.a, side: "sell", usd: -g.usd, qty: (-g.usd / price).toFixed(8) };
+    });
+  const buys: Trade[] = gaps
+    .filter((g) => g.usd >= MIN_ORDER_USD)
+    .map((g) => ({ token: g.a, side: "buy", usd: g.usd, qty: g.usd.toFixed(6) }));
+  return [...sells, ...buys];
+}
+
+export const holdings = () =>
+  cli.run<Holding[]>(["wallet", "balance", "--binanceChainId", BSC_CHAIN_ID]);
+
+/** Sell overweight, then buy underweight. Stops at the first failure; results so far are returned on the error. */
+export async function rebalance(targets: Record<string, number>, drift = 0.05) {
+  const results: { trade: Trade; swap: SwapResult }[] = [];
+  const fail = (e: Error) => Promise.reject(Object.assign(e, { results }));
+  const plan = planRebalance(await holdings(), targets, drift);
+  for (const trade of plan.filter((t) => t.side === "sell")) {
+    results.push({ trade, swap: await sell(trade.token, trade.qty).catch(fail) });
+  }
+  // Sells return a bit less than planned (fees, slippage): scale buys to the USDT we actually have.
+  const buys = plan.filter((t) => t.side === "buy");
+  const want = buys.reduce((s, t) => s + t.usd, 0);
+  const have = buys.length
+    ? Number(
+        (await holdings()).find((h) => h.address.toLowerCase() === USDT.toLowerCase())?.balance ??
+          0,
+      )
+    : 0;
+  const k = Math.min(1, have / want);
+  for (const t of buys) {
+    const trade = { ...t, usd: t.usd * k, qty: (t.usd * k).toFixed(6) };
+    if (trade.usd < MIN_ORDER_USD) continue;
+    results.push({ trade, swap: await buy(trade.token, trade.qty).catch(fail) });
+  }
+  return results;
+}

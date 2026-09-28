@@ -1,5 +1,5 @@
 import { afterEach, expect, mock, spyOn, test } from "bun:test";
-import { BawError, cli, refill, sellForCard, swap, USD1, USDT } from ".";
+import { BawError, cli, planRebalance, rebalance, refill, sellForCard, swap, USD1, USDT } from ".";
 
 const NVDA = "0xa9ee28c80f960b889dfbd1902055218cba016f75";
 const settings = (enabled: boolean) => ({ devMode: { enabled } });
@@ -90,4 +90,59 @@ test("swap finds the order when baw returns a different orderId (first-use appro
   }) as typeof cli.run);
   const r = await swap(USD1, NVDA, "5.1", "1", 0);
   expect(r.order.orderId).toBe("6868");
+});
+
+const NVDAB = "0x02fca66c1d1afb4e2a7884261eb00f63598a7436";
+const h = (address: string, value: number, price = 1) => ({
+  symbol: "",
+  address,
+  balance: String(value / price),
+  price: String(price),
+  value: String(value),
+});
+
+test("planRebalance: no trades inside drift", () => {
+  expect(
+    planRebalance([h(NVDA, 52, 230), h(NVDAB, 48, 227)], { [NVDA]: 0.5, [NVDAB]: 0.5 }),
+  ).toEqual([]);
+});
+
+test("planRebalance: sells overweight before buying underweight, in token units", () => {
+  const t = planRebalance([h(NVDA, 70, 230), h(NVDAB, 30, 227)], { [NVDA]: 0.5, [NVDAB]: 0.5 });
+  expect(t.map((x) => [x.side, x.token, x.usd])).toEqual([
+    ["sell", NVDA, 20],
+    ["buy", NVDAB, 20],
+  ]);
+  expect(t[0].qty).toBe((20 / 230).toFixed(8));
+});
+
+test("planRebalance: idle USDT gets deployed, sub-$5 legs skipped", () => {
+  const t = planRebalance([h(USDT, 30), h(NVDA, 50, 230), h(NVDAB, 23, 227)], {
+    [NVDA]: 0.5,
+    [NVDAB]: 0.5,
+  });
+  // total 103 → 51.5 each: NVDA +1.5 (skipped), NVDAB +28.5
+  expect(t).toEqual([{ token: NVDAB, side: "buy", usd: 28.5, qty: "28.500000" }]);
+});
+
+test("rebalance scales buys down to the USDT the sells actually returned", async () => {
+  const calls: string[][] = [];
+  let balanceReads = 0;
+  spyOn(cli, "run").mockImplementation((async (args: string[]) => {
+    calls.push(args);
+    const cmd = args.slice(0, 2).join(" ");
+    if (cmd === "wallet balance")
+      return balanceReads++ === 0 ? [h(NVDA, 70, 230), h(NVDAB, 30, 227)] : [h(USDT, 19)];
+    if (cmd === "wallet status") return { status: "CONNECTED" };
+    if (cmd === "wallet settings") return settings(false);
+    if (cmd === "market-order quote") return {};
+    if (cmd === "market-order swap") return { orderId: "1" };
+    if (cmd === "market-order list") return { list: [{ status: "FINISHED" }] };
+    throw new Error(`unexpected ${cmd}`);
+  }) as typeof cli.run);
+  const r = await rebalance({ [NVDA]: 0.5, [NVDAB]: 0.5 });
+  expect(r.map((x) => [x.trade.side, x.trade.qty])).toEqual([
+    ["sell", (20 / 230).toFixed(8)],
+    ["buy", "19.000000"],
+  ]);
 });
