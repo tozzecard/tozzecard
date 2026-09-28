@@ -143,9 +143,13 @@ Setiap aksi disimpan: waktu, aksi, token, jumlah, alasan (forecast, spread, stat
 
 Tidak dipakai: ERC-4337 smart account, delegate EIP-7702, paymaster pihak ketiga, Altana/Turnkey, kontrak custom.
 
-### Revenue — **terbuka, tergantung L4**
-- Jika `baw` swap menerima fee/referrer → fee per refill/rebalance.
-- Jika tidak → opsi: langganan Pro dibayar lewat B402 (kami sebagai merchant), atau fee merchant untuk rail pembayaran. Diputuskan setelah L4, tidak menghalangi MVP.
+### Revenue — **fee merchant di rail B402** (keputusan tim 28 Sep, issue #3)
+- L4 gagal: `baw market-order swap` tidak punya fee/referrer, jadi fee per swap tidak mungkin tanpa Developer Mode (yang membobol address book). Langganan Pro dicoret dari MVP.
+- B402 men-settle langsung ke `payTo` merchant tanpa split, jadi fee tidak bisa dipotong dari satu settlement. Mekanisme: saat checkout kartu menandatangani **dua** otorisasi EIP-3009 dalam satu tap passkey:
+  - `harga − fee` → `payTo` merchant, di-settle server merchant lewat project B402-nya
+  - `fee` → `payTo` Tozzecard, di-settle server kami lewat project B402 kami
+- Seperti merchant fee kartu biasa: pembeli bayar harga yang tertera, merchant menerima harga − fee. Non-custodial, tanpa kontrak.
+- Dibuktikan di L5: dua otorisasi dari payer yang sama (nonce berbeda) ter-settle terpisah, payer tetap 0 BNB.
 
 ---
 
@@ -158,8 +162,8 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 | L1 | `baw` sign-in + swap Ondo/bStock → stablecoin di BSC mainnet | Fajar | ✅ 28 Sep. Beli USDT→NVDAon & jual NVDAon→USDT live, selesai ±6 dtk (tx `0x693f6e5a…`, `0x5f482834…`). Min order $5 |
 | L2 | `baw wallet send` ke alamat di luar address book ditolak | Fajar | ✅ 28 Sep, ditolak `351703`. **Hanya berlaku selama Developer Mode mati**: `contract-call` membobol address book (tx `0xb315357f…`). Agent menolak jalan bila Developer Mode aktif (#5) |
 | L3 | `baw` swap langsung ke USD1; likuiditas $5–50 | Fajar | ⚠️ 28 Sep. bStock → USD1 langsung bisa. **Ondo hanya ke USDT** (`103` "one side must be a supported stablecoin"), lalu USDT → USD1 (live, 5 → 5.0012). Likuiditas $5–50 cukup (#4) |
-| L4 | `baw` swap menerima fee/referrer | Fajar | ❌ 28 Sep. `market-order swap --help` tidak punya fee/referrer → revenue via B402 (§4) |
-| L5 | B402 end-to-end: key browser tanda tangan EIP-3009 USD1, settle, payer 0 BNB | Kiel + Axel | Fallback USDT + Permit2 (user butuh sedikit BNB sekali) |
+| L4 | `baw` swap menerima fee/referrer | Fajar | ❌ 28 Sep. `market-order swap --help` tidak punya fee/referrer → revenue = fee merchant di B402 (§4, #3) |
+| L5 | B402 end-to-end: key browser tanda tangan EIP-3009 USD1, settle, payer 0 BNB; plus dua otorisasi (merchant + fee) ter-settle terpisah | Kiel + Axel | Fallback USDT + Permit2 (user butuh sedikit BNB sekali) |
 | L6 | WebAuthn PRF di Chrome & Safari iOS | Axel | Key dienkripsi PIN sebagai fallback |
 | L7 | Transfer Ondo nominal > 0 antar wallet non-KYC | Fajar | Fokus bStocks |
 | L8 | Kelayakan dari Indonesia: akun Binance + trading bStock/Ondo | Semua | Pilih issuer yang tersedia |
