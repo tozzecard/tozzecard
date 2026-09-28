@@ -76,14 +76,28 @@ export function createClient({
       body: raw || undefined,
     });
     const text = await res.text();
-    let json: { code?: number | string; msg?: string; data?: T; success?: boolean };
+    // Two envelopes: {code: 0, msg, data, success} and B402's {status, code: "000000000", errorData, data}.
+    let json: {
+      code?: number | string;
+      msg?: string;
+      data?: T;
+      success?: boolean;
+      status?: string;
+      errorData?: string | null;
+    };
     try {
       json = JSON.parse(text);
     } catch {
       throw new BinanceApiError("NON_JSON", text.slice(0, 200), res.status);
     }
-    if (!res.ok || json.success === false || (json.code !== undefined && Number(json.code) !== 0)) {
-      throw new BinanceApiError(json.code ?? res.status, json.msg ?? res.statusText, res.status);
+    if (
+      !res.ok ||
+      json.success === false ||
+      json.status === "ERROR" ||
+      (json.code !== undefined && Number(json.code) !== 0)
+    ) {
+      const msg = json.msg ?? json.errorData ?? res.statusText;
+      throw new BinanceApiError(json.code ?? res.status, msg, res.status);
     }
     return json.data as T;
   }
@@ -96,6 +110,7 @@ export function createClient({
 
 export type BinanceClient = ReturnType<typeof createClient>;
 
+export * from "./b402";
 export * from "./rwa";
 
 export function clientFromEnv(env = process.env): BinanceClient {
