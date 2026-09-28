@@ -1,10 +1,13 @@
 // Agent wallet: holds the stocks, buys, rebalances, refills the card.
-// Owner: Fajar. Drives the Binance Agentic Wallet through the `baw` CLI (spike #2).
-// Invariant: USDT only ever leaves the agent wallet to the user's card address. Binance enforces
-// this with the address book, but only while Developer Mode is off, so every execution checks it.
+// Owner: Fajar. Drives the user's Binance Agentic Wallet through the `baw` CLI.
+// Invariant: stablecoin only ever leaves the agent wallet to the user's card address. Binance
+// enforces this with the address book, but only while Developer Mode is off (docs/research.md §1),
+// so every execution checks it.
 import { BSC_CHAIN_ID } from "@tozzecard/binance";
 
 export const USDT = "0x55d398326f99059fF775485246999027B3197955";
+/** The card pays in USD1 through B402 (docs/plan.md §3.2). */
+export const USD1 = "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d";
 /** Binance rejects market orders below this (`30003001`). */
 export const MIN_ORDER_USD = 5;
 
@@ -69,8 +72,19 @@ export const quote = (from: string, to: string, qty: string) =>
     BSC_CHAIN_ID,
   ]);
 
-/** Refuse to act while Developer Mode is on: contract-call bypasses the address book (spike #2). */
+/**
+ * Before every execution: the session must be live (it expires after 48h idle / 7 days and needs
+ * the user's Binance App to renew), and Developer Mode must be off, since contract-call bypasses
+ * the address book.
+ */
 export async function assertSafe() {
+  const { status } = await cli.run<{ status: string }>(["wallet", "status"]);
+  if (status !== "CONNECTED")
+    throw new BawError(
+      0,
+      "SESSION_EXPIRED",
+      "Agentic Wallet is signed out; sign in again in the Binance App.",
+    );
   const s = await cli.run<{ devMode: { enabled: boolean } }>(["wallet", "settings"]);
   if (s.devMode.enabled)
     throw new Error(
@@ -121,20 +135,35 @@ export async function swap(
 export const buy = (token: string, usdt: string) => swap(USDT, token, usdt);
 export const sell = (token: string, amount: string) => swap(token, USDT, amount);
 
-/** Send USDT to the card. Binance rejects any address not in the address book (`351703`). */
-export async function refill(cardAddress: string, usdt: string): Promise<string> {
+/**
+ * Sell stock into USD1 for the card. bStocks swap to USD1 directly; Ondo only settles to USDT
+ * (`103` "one side must be a supported stablecoin"), so Ondo goes token → USDT → USD1.
+ * The `103` comes from the quote, before any order is placed.
+ */
+export async function sellForCard(token: string, amount: string): Promise<SwapResult[]> {
+  try {
+    return [await swap(token, USD1, amount)];
+  } catch (e) {
+    if (!(e instanceof BawError && e.code === 103)) throw e;
+  }
+  const toUsdt = await sell(token, amount);
+  return [toUsdt, await swap(USDT, USD1, toUsdt.order.toTokenActualQty ?? "0")];
+}
+
+/** Send USD1 to the card. Binance rejects any address not in the address book (`351703`). */
+export async function refill(cardAddress: string, usd1: string): Promise<string> {
   await assertSafe();
   const { txHash } = await cli.run<{ txHash: string }>([
     "wallet",
     "send",
     "--amount",
-    usdt,
+    usd1,
     "--recipient",
     cardAddress,
     "--binanceChainId",
     BSC_CHAIN_ID,
     "--tokenAddress",
-    USDT,
+    USD1,
   ]);
   return txHash;
 }
