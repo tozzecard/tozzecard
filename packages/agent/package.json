@@ -6,6 +6,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@binance/agentic-wallet": "1.10.0",
     "@tozzecard/binance": "workspace:*"
   },
   "scripts": {
