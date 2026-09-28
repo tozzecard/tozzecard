@@ -6,11 +6,13 @@
     "dev": "bun --env-file=../../.env --watch src/index.ts",
     "start": "bun --env-file=../../.env src/index.ts",
     "typecheck": "tsc",
-    "test": "bun test --pass-with-no-tests"
+    "test": "bun test --pass-with-no-tests",
+    "pay": "bun --env-file=../../.env scripts/pay.ts"
   },
   "dependencies": {
     "@tozzecard/agent": "workspace:*",
     "@tozzecard/binance": "workspace:*",
-    "hono": "^4.10.0"
+    "hono": "^4.10.0",
+    "viem": "^2.56.9"
   }
 }
