@@ -184,7 +184,7 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [ ] L5 (sisi server)
 - [ ] Client Binance Web3 API (HMAC, retry, error mapping)
 - [x] Market-hours & spread service (RWA Data) — `apps/api/src/market.ts`, `GET /market/:symbol`
-- [ ] **Deploy API sebelum Jumat 2 Okt 20:00 UTC** supaya acuan penutupan Jumat terekam untuk demo & pengamatan weekend
+- [x] **Deploy API** — Railway Singapura, 28 Sep, merekam acuan penutupan sejak sesi regular 28 Sep
 - [ ] Forecaster v1, scheduler refill (3.3) + rebalance (3.5), pemilihan saham (3.4)
 - [x] Server merchant demo B402 (402 → verify → settle) — kode + tes; live menunggu izin B402 di portal
 - [ ] DB: user, target alokasi, pembayaran, log keputusan
