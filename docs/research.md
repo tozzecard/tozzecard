@@ -11,10 +11,10 @@ Anything marked *unverified* must be tested live before we rely on it (see "Live
 | Driven from our backend? | Yes, through the `baw` CLI (`npm @binance/agentic-wallet`), `--json` on every command. **Sign-in needs the user to confirm in the Binance App**; sessions expire (example 48h) or on inactivity. No HTTP API / SDK documented. | [BN] skills-hub `binance-agentic-wallet/SKILL.md`, `references/authentication.md`, `wallet-setting.md` |
 | Destination allowlist | **Yes, enforced by Binance.** "The `--recipient` address **must** be in the address book." Address book, daily limit, token allowlist are edited **only in the Binance App**, "Settings cannot be changed via the CLI." | [BN] `references/send.md`, `wallet-setting.md` |
 | Swap tokenized stocks on BSC | Yes, `baw market-order swap` (bStock, Ondo). Limit orders can fail for Ondo ("Ondo-related tokens cannot be traded"); limit-sell output only USDT/USDC/native. | [BN] stock-trading, `SKILL.md` |
-| Arbitrary contract calls | Only in Developer Mode (enabled in the App). Other page says it "does not sign or initiate arbitrary transactions" by default. We don't need it. | [BN] `references/external-sign.md`, agentic-wallet/introduction |
+| Arbitrary contract calls | Only in Developer Mode (enabled in the App). Other page says it "does not sign or initiate arbitrary transactions" by default. We don't need it. **[LIVE] While it is on, `contract-call` bypasses the address book** (`USDT.transfer` to a non-address-book address executed, tx `0xb315357fd7f16cbc23f4ca0aede0aa76ff763a1f2176fe20fc63cc7ff1fe751a`). The allowlist guarantee requires Developer Mode off. | [BN] `references/external-sign.md`, agentic-wallet/introduction |
 | Scheduling | Not server-side. Scheduling lives on our side (cron → `baw`), capped by the user's daily limit. | [BN] automated-strategies |
-| Gasless / smart accounts | Not documented. Gas paid in BNB. | [BN] `references/gas.md` |
-| Integrator fee on swaps | *Unverified.* `baw market-order swap` has no documented referrer/`feePercent`. | — |
+| Gasless / smart accounts | Not documented. **[LIVE]** Ondo trades are relayed (tx `from` is a Binance relayer, agent pays 0 BNB); plain DEX swaps (USDT→USD1) and approvals are sent by the agent wallet and cost BNB (~0.0001 BNB each). Keep a little BNB in the agent wallet. | [BN] `references/gas.md` |
+| Integrator fee on swaps | **[LIVE] No.** `baw market-order swap --help` (1.10.0) has no referrer/`feePercent` flag. | `baw` CLI |
 
 ## 2. Binance Web3 API
 
@@ -67,10 +67,10 @@ the spread is the executable quote vs that frozen close. See plan §3.3.
 
 | # | Check | Owner |
 |---|---|---|
-| L1 | `baw` sign-in, `market-order swap` Ondo/bStock → USDT on BSC with a few dollars | Fajar |
-| L2 | `baw wallet send` to an address **not** in the address book is rejected (demo proof) | Fajar |
-| L3 | Can `baw` swap to **USD1** (or U) directly? Liquidity/price impact for $5–50 | Fajar |
-| L4 | Does `baw` swap accept a referrer/fee? If not, revenue model changes | Fajar |
+| L1 | `baw` sign-in, `market-order swap` Ondo/bStock → USDT on BSC with a few dollars | Fajar · ✅ buy + sell NVDAon live |
+| L2 | `baw wallet send` to an address **not** in the address book is rejected (demo proof) | Fajar · ✅ `351703`, only with Developer Mode off |
+| L3 | Can `baw` swap to **USD1** (or U) directly? Liquidity/price impact for $5–50 | Fajar · ⚠️ bStock yes; Ondo only via USDT |
+| L4 | Does `baw` swap accept a referrer/fee? If not, revenue model changes | Fajar · ❌ no |
 | L5 | B402 end to end: our merchant server returns 402, a browser-held key signs EIP-3009 for USD1, B402 settles, payer holds zero BNB | Kiel + Axel |
 | L6 | WebAuthn PRF works in target browsers (Chrome, Safari iOS) to unlock the card key | Axel |
 | L7 | Ondo non-zero transfer between two non-KYC wallets succeeds | Fajar |
