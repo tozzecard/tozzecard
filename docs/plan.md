@@ -190,7 +190,8 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [x] Market-hours & spread service (RWA Data) — `apps/api/src/market.ts`, `GET /market/:symbol`
 - [x] **Deploy API** — Railway Singapura, 28 Sep, merekam acuan penutupan sejak sesi regular 28 Sep
 - [x] Forecaster v1 — `apps/api/src/forecast.ts`
-- [ ] Scheduler refill (3.3) + rebalance (3.5), pemilihan saham (3.4)
+- [x] Kalender bursa AS + perencana refill (3.3, 3.4) — `calendar.ts`, `refill.ts` (keputusan murni)
+- [ ] Scheduler yang mengeksekusi keputusan (butuh #22) + rebalance harian (3.5) + log keputusan (3.6)
 - [x] Server merchant demo B402 (402 → verify → settle) — kode + tes; live menunggu izin B402 di portal
 - [ ] DB: user, target alokasi, pembayaran, log keputusan
 - [ ] API untuk frontend: portofolio, saldo kartu, feed, strategi
