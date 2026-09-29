@@ -20,5 +20,6 @@ const { urlForWeb, pairingCode, qrCodeId } = await cli.run<{
 console.log(
   `Open ${urlForWeb}\nIn the Binance App, check the pairing code is ${pairingCode} and confirm.`,
 );
-await cli.run(["auth", "verify", "--qrCodeId", qrCodeId]);
+// verify blocks until the user confirms in the App or the QR expires (~5 min).
+await cli.run(["auth", "verify", "--qrCodeId", qrCodeId], 330_000);
 console.log("Signed in:", await session());

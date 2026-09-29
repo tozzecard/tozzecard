@@ -29,13 +29,15 @@ export const cli = {
   // baw never exits when signed out or when *.binance.com is unreachable (ISP DNS block), which
   // hung callers and leaked processes. Kill it and fail loudly instead.
   timeoutMs: 30_000,
-  async run<T>(args: string[]): Promise<T> {
+  /** `timeoutMs` per call: `auth verify` legitimately waits up to 5 min for the Binance App. */
+  async run<T>(args: string[], timeoutMs?: number): Promise<T> {
+    const limit = timeoutMs ?? cli.timeoutMs;
     const proc = Bun.spawn([...cli.bin, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
       proc.kill();
-    }, cli.timeoutMs);
+    }, limit);
     const out =
       (await new Response(proc.stdout).text()) || (await new Response(proc.stderr).text());
     const code = await proc.exited;
@@ -44,7 +46,7 @@ export const cli = {
       throw new BawError(
         0,
         "TIMEOUT",
-        `baw ${args.slice(0, 2).join(" ")} gave no answer in ${cli.timeoutMs} ms (signed out, or *.binance.com unreachable)`,
+        `baw ${args.slice(0, 2).join(" ")} gave no answer in ${limit} ms (signed out, or *.binance.com unreachable)`,
       );
     let res: {
       success: boolean;

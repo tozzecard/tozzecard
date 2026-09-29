@@ -270,3 +270,18 @@ test("cli.run kills a baw that never answers and throws TIMEOUT", async () => {
     Object.assign(cli, { bin, timeoutMs });
   }
 });
+
+test("cli.run: a per-call timeout outlives the default (auth verify waits for the App)", async () => {
+  const { bin, timeoutMs } = cli;
+  cli.bin = [
+    "bun",
+    "-e",
+    'await Bun.sleep(400); console.log(JSON.stringify({success:true,data:"ok"}))',
+  ];
+  cli.timeoutMs = 100;
+  try {
+    expect(await cli.run<string>(["auth", "verify"], 2_000)).toBe("ok");
+  } finally {
+    Object.assign(cli, { bin, timeoutMs });
+  }
+});
