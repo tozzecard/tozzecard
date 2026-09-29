@@ -24,29 +24,46 @@ export class BawError extends Error {
 }
 
 export const cli = {
-  bin: ["bun", BAW],
+  // Node, not Bun: Bun can't create secp256k1 ECDH keys, which `auth signin` needs.
+  bin: ["node", BAW],
   // baw never exits when signed out or when *.binance.com is unreachable (ISP DNS block), which
   // hung callers and leaked processes. Kill it and fail loudly instead.
   timeoutMs: 30_000,
-  async run<T>(args: string[]): Promise<T> {
+  /** `timeoutMs` per call: `auth verify` legitimately waits up to 5 min for the Binance App. */
+  async run<T>(args: string[], timeoutMs?: number): Promise<T> {
+    const limit = timeoutMs ?? cli.timeoutMs;
     const proc = Bun.spawn([...cli.bin, ...args, "--json"], { stdout: "pipe", stderr: "pipe" });
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
       proc.kill();
-    }, cli.timeoutMs);
+    }, limit);
     const out =
       (await new Response(proc.stdout).text()) || (await new Response(proc.stderr).text());
-    await proc.exited;
+    const code = await proc.exited;
     clearTimeout(timer);
     if (timedOut)
       throw new BawError(
         0,
         "TIMEOUT",
-        `baw ${args.slice(0, 2).join(" ")} gave no answer in ${cli.timeoutMs} ms (signed out, or *.binance.com unreachable)`,
+        `baw ${args.slice(0, 2).join(" ")} gave no answer in ${limit} ms (signed out, or *.binance.com unreachable)`,
       );
-    const res = JSON.parse(out);
-    if (!res.success) throw new BawError(res.error.code, res.error.name, res.error.message);
+    let res: {
+      success: boolean;
+      data?: unknown;
+      error?: { code: number; name: string; message: string };
+    };
+    try {
+      res = JSON.parse(out);
+    } catch {
+      throw new Error(
+        `baw ${args.slice(0, 2).join(" ")} exited ${code} with non-JSON output: ${out.slice(0, 200)}`,
+      );
+    }
+    if (!res.success) {
+      const e = res.error ?? { code, name: "UNKNOWN", message: out.slice(0, 200) };
+      throw new BawError(e.code, e.name, e.message);
+    }
     return res.data as T;
   },
 };
@@ -257,6 +274,8 @@ export interface Trade {
  * Pure: trades that bring `holdings` back to `targets` (address → weight, sums to 1).
  * Idle USDT is part of the portfolio with weight 0. Returns [] unless some token drifts more
  * than `drift` (absolute weight). Legs under MIN_ORDER_USD are skipped. Sells come first.
+ * Only tokens in `targets` are touched: to exit a position, keep it with weight 0 (then the full
+ * balance is sold). Anything else in the wallet (airdrops, dust) is left alone on purpose.
  */
 export function planRebalance(
   holdings: Holding[],
@@ -278,11 +297,13 @@ export function planRebalance(
       const h = held.get(g.a);
       // Round down and cap at the balance: toFixed rounds half up and can ask for more than held.
       const units = Math.min(-g.usd / Number(h?.price), Number(h?.balance ?? 0));
-      return { token: g.a, side: "sell", usd: -g.usd, qty: floorTo(units, 8) };
+      // A full exit sells the exact balance string: no float round-trip leaves dust behind.
+      const exit = (target.get(g.a) ?? 0) === 0 && h?.balance;
+      return { token: g.a, side: "sell", usd: -g.usd, qty: exit || floorTo(units, 8) };
     });
   const buys: Trade[] = gaps
     .filter((g) => g.usd >= MIN_ORDER_USD)
-    .map((g) => ({ token: g.a, side: "buy", usd: g.usd, qty: g.usd.toFixed(6) }));
+    .map((g) => ({ token: g.a, side: "buy", usd: g.usd, qty: floorTo(g.usd, 6) }));
   return [...sells, ...buys];
 }
 
@@ -310,7 +331,7 @@ export async function rebalance(targets: Record<string, number>, drift = 0.05) {
     : 0;
   const k = Math.min(1, have / want);
   for (const t of buys) {
-    const trade = { ...t, usd: t.usd * k, qty: (t.usd * k).toFixed(6) };
+    const trade = { ...t, usd: t.usd * k, qty: floorTo(t.usd * k, 6) };
     if (trade.usd < MIN_ORDER_USD) continue;
     results.push({ trade, swap: await buy(trade.token, trade.qty).catch(fail) });
   }

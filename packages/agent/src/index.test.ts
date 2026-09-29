@@ -243,7 +243,18 @@ test("planRebalance: a full exit never sells more than the balance", () => {
   );
   const sell = t.find((x) => x.side === "sell");
   expect(Number(sell?.qty)).toBeLessThanOrEqual(balance);
-  expect(sell?.qty).toBe("0.12345678");
+  // Exact balance as baw reported it: no float round-trip, no dust left behind.
+  expect(sell?.qty).toBe(String(balance));
+});
+
+test("cli.run: non-JSON output becomes an error with context", async () => {
+  const spawn = spyOn(Bun, "spawn").mockReturnValue({
+    stdout: new Response("npm WARN something broke").body,
+    stderr: new Response("").body,
+    exited: Promise.resolve(1),
+  } as never);
+  expect(cli.run(["wallet", "status"])).rejects.toThrow("exited 1 with non-JSON output: npm WARN");
+  spawn.mockRestore();
 });
 
 test("cli.run kills a baw that never answers and throws TIMEOUT", async () => {
@@ -255,6 +266,21 @@ test("cli.run kills a baw that never answers and throws TIMEOUT", async () => {
     const err = (await cli.run(["wallet", "status"]).catch((e) => e)) as BawError;
     expect(err.name).toBe("TIMEOUT");
     expect(Date.now() - t).toBeLessThan(2_000);
+  } finally {
+    Object.assign(cli, { bin, timeoutMs });
+  }
+});
+
+test("cli.run: a per-call timeout outlives the default (auth verify waits for the App)", async () => {
+  const { bin, timeoutMs } = cli;
+  cli.bin = [
+    "bun",
+    "-e",
+    'await Bun.sleep(400); console.log(JSON.stringify({success:true,data:"ok"}))',
+  ];
+  cli.timeoutMs = 100;
+  try {
+    expect(await cli.run<string>(["auth", "verify"], 2_000)).toBe("ok");
   } finally {
     Object.assign(cli, { bin, timeoutMs });
   }
