@@ -26,15 +26,23 @@ type Dynamic = {
 };
 
 const bps = (x: number) => `${x >= 0 ? "+" : ""}${Math.round(x * 1e4)}`;
+/** One markdown table row. */
+const row = (cells: string[]) => `| ${cells.join(" | ")} |`;
 
 const tickers = process.argv.slice(2);
 if (!tickers.length) throw new Error("usage: price-impact.ts TICKER...");
 
 console.log(`Quotes at ${new Date().toISOString()}. bps vs fair, + = worse for us.\n`);
-console.log(
-  `| Ticker | Provider | Status | Fair | ${SIZES.map((s) => `buy $${s}`).join(" | ")} | ${SIZES.map((s) => `sell $${s}`).join(" | ")} |`,
-);
-console.log(`|${" --- |".repeat(4 + SIZES.length * 2)}`);
+const header = [
+  "Ticker",
+  "Provider",
+  "Status",
+  "Fair",
+  ...SIZES.map((s) => `buy $${s}`),
+  ...SIZES.map((s) => `sell $${s}`),
+];
+console.log(row(header));
+console.log(row(header.map(() => "---")));
 
 for (const { type, name } of PROVIDERS) {
   const list = await get<Listed[]>(
@@ -63,8 +71,6 @@ for (const { type, name } of PROVIDERS) {
       const got = await out(token, USDT, usd / fair);
       cells.push(got === null ? "err" : bps(1 - got / usd));
     }
-    console.log(
-      `| ${ticker} | ${name} | ${d.statusInfo.marketStatus ?? "-"} | ${fair.toFixed(2)} | ${cells.join(" | ")} |`,
-    );
+    console.log(row([ticker, name, d.statusInfo.marketStatus ?? "-", fair.toFixed(2), ...cells]));
   }
 }
