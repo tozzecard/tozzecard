@@ -75,8 +75,9 @@ git pull && docker compose up -d --build
 ```
 
 [`docker-compose.yml`](docker-compose.yml) runs one container in its own Compose project (`tozzecard`),
-listening on `127.0.0.1:8787` only (`API_HOST_PORT` to change it). The host's reverse proxy serves
-`api.tozzecard.xyz` with TLS and forwards to that port. Data lives in `./data` next to the compose
+listening on `127.0.0.1:8787` only (`API_HOST_PORT` to change it). On our VPS (`/opt/tozzecard`) Caddy
+runs in another Compose project, so a `docker-compose.override.yml` there (not in git) also joins its
+network `deploy_default` as `tozzecard-api`, and the Caddyfile has `api.tozzecard.xyz { reverse_proxy tozzecard-api:8787 }`. Data lives in `./data` next to the compose
 file: back it up, it holds the close references and the Agentic Wallet session. Secrets live in `.env` on the VPS, never in the repo.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a PR.
