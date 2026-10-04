@@ -5,8 +5,10 @@
 //   - a cooldown after each executed refill, and one tick at a time
 //   - a signed-out Agentic Wallet is "blocked", not retried
 //   - with the market shut, a sale must pass an executable quote, not just the on-chain price
+//   - rebalance (plan §3.5) at most once per NY trading day, only while the market is open, and
+//     never when a refill is due: the refill already sells the most overweight stock
 import type { Database } from "bun:sqlite";
-import { type Holding, type Quote, type SwapResult, USDT } from "@tozzecard/agent";
+import { type Holding, planRebalance, type Quote, type SwapResult, USDT } from "@tozzecard/agent";
 import { isRegularOpen } from "./calendar";
 import { forecast, type Spend } from "./forecast";
 import type { MarketView } from "./market";
@@ -16,12 +18,18 @@ const COOLDOWN_MS = 5 * 60_000;
 const UNKNOWN_BLOCKS_MS = 30 * 60_000;
 // Statuses the market service reports for tokens we must not sell.
 const UNSELLABLE = new Set(["UNSUPPORTED", "ASSET_PAUSED", "ASSET_LIMITED", "MARKET_PAUSED"]);
+/** Rebalance when a token is this far (absolute weight) from its target. */
+const DRIFT = 0.05;
+const nyDay = (t: number) =>
+  new Date(t).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
 export interface AgentPort {
   holdings(): Promise<Holding[]>;
   quote(from: string, to: string, qty: string): Promise<Quote>;
   sellForCard(token: string, amount: string): Promise<SwapResult[]>;
   refill(cardAddress: string, usd1: string): Promise<string>;
+  /** Rejects with `results` (the swaps done so far) attached when a leg fails. */
+  rebalance(targets: Record<string, number>, drift: number): Promise<{ swap: SwapResult }[]>;
 }
 
 export interface SchedulerConfig {
@@ -39,7 +47,7 @@ export type Status = "logged" | "dry-run" | "executed" | "failed" | "unknown" | 
 export interface LogEntry {
   id: number;
   at: number;
-  action: Decision["action"];
+  action: Decision["action"] | "rebalance";
   symbol: string | null;
   usd: number | null;
   reason: string;
@@ -70,7 +78,10 @@ export function createScheduler(deps: {
     "SELECT at FROM decisions WHERE status = ? ORDER BY id DESC LIMIT 1",
   );
   const last = db.prepare<{ action: string; symbol: string | null }, []>(
-    "SELECT action, symbol FROM decisions ORDER BY id DESC LIMIT 1",
+    "SELECT action, symbol FROM decisions WHERE action != 'rebalance' ORDER BY id DESC LIMIT 1",
+  );
+  const lastRebalance = db.prepare<{ at: number }, []>(
+    "SELECT at FROM decisions WHERE action = 'rebalance' ORDER BY id DESC LIMIT 1",
   );
 
   const log = (limit = 50): LogEntry[] =>
@@ -84,14 +95,19 @@ export function createScheduler(deps: {
   /** Token units worth `usd` at `price`, rounded down to baw's 8 decimals. */
   const qtyFor = (usd: number, price: number) => (Math.floor((usd / price) * 1e8) / 1e8).toFixed(8);
 
-  async function positions(): Promise<{ positions: Position[]; prices: Map<string, number> }> {
+  async function positions(): Promise<{
+    positions: Position[];
+    prices: Map<string, number>;
+    held: Holding[];
+  }> {
     const byAddress = new Map(deps.markets().map((m) => [m.address.toLowerCase(), m]));
     const targets = new Map(
       Object.entries(config.targets).map(([a, w]) => [a.toLowerCase(), w] as const),
     );
     const prices = new Map<string, number>();
     const out: Position[] = [];
-    for (const h of await agent.holdings()) {
+    const held = await agent.holdings();
+    for (const h of held) {
       const address = h.address.toLowerCase();
       const m = byAddress.get(address);
       if (!m) continue; // not a tokenized stock (USDT, USD1, BNB)
@@ -105,11 +121,11 @@ export function createScheduler(deps: {
         sellable: !UNSELLABLE.has(m.status.reasonCode ?? ""),
       });
     }
-    return { positions: out, prices };
+    return { positions: out, prices, held };
   }
 
   async function plan(now: number) {
-    const [{ positions: p, prices }, cardUsd] = await Promise.all([
+    const [{ positions: p, prices, held }, cardUsd] = await Promise.all([
       positions(),
       deps.cardBalanceUsd(),
     ]);
@@ -123,7 +139,7 @@ export function createScheduler(deps: {
       now,
     );
     const d = planRefill({ now, cardUsd, forecast: f, positions: p });
-    return { decision: isRegularOpen(now) ? d : await checkQuote(d, prices), prices };
+    return { decision: isRegularOpen(now) ? d : await checkQuote(d, prices), prices, held };
   }
 
   /**
@@ -174,9 +190,13 @@ export function createScheduler(deps: {
       const done = lastWith.get("executed");
       if (done && now - done.at < COOLDOWN_MS) return null;
 
-      const { decision: d, prices } = await plan(now);
+      const { decision: d, prices, held } = await plan(now);
       const symbol = "symbol" in d ? (d.symbol ?? null) : null;
       if (d.action !== "refill") {
+        if (isRegularOpen(now)) {
+          const r = await rebalance(now, held);
+          if (r) return r;
+        }
         // Log a no-op only when it changes, not every minute.
         const prev = last.get();
         if (prev?.action === d.action && prev.symbol === symbol) return null;
@@ -206,19 +226,65 @@ export function createScheduler(deps: {
         txs.push(await agent.refill(config.card, usd1));
         finish.run("executed", JSON.stringify(txs), null, id);
       } catch (e) {
-        const err = e as Error & { name?: string };
-        const status: Status =
-          err.name === "SESSION_EXPIRED"
-            ? "blocked"
-            : /still PENDING/.test(err.message)
-              ? "unknown"
-              : "failed";
-        finish.run(status, JSON.stringify(txs), err.message, id);
+        finish.run(statusOf(e as Error), JSON.stringify(txs), (e as Error).message, id);
       }
       return log(1)[0];
     } finally {
       running = false;
     }
+  }
+
+  const statusOf = (err: Error): Status =>
+    err.name === "SESSION_EXPIRED"
+      ? "blocked"
+      : /still PENDING/.test(err.message)
+        ? "unknown"
+        : "failed";
+
+  /** Plan §3.5. Once per NY day, even if it fails: a broken leg is for a person to look at. */
+  async function rebalance(now: number, held: Holding[]): Promise<LogEntry | null> {
+    const prev = lastRebalance.get();
+    if (prev && nyDay(prev.at) === nyDay(now)) return null;
+    const trades = planRebalance(held, config.targets, DRIFT);
+    if (!trades.length) return null;
+
+    const name = (a: string) => marketOf(a)?.symbol ?? a;
+    // Same base as planRebalance: the target tokens plus idle USDT.
+    const counted = new Set([...Object.keys(config.targets), USDT].map((a) => a.toLowerCase()));
+    const total =
+      held
+        .filter((h) => counted.has(h.address.toLowerCase()))
+        .reduce((s, h) => s + Number(h.value), 0) || 1;
+    const worst = Object.entries(config.targets)
+      .map(([a, w]) => ({
+        a: a.toLowerCase(),
+        w,
+        now:
+          Number(held.find((h) => h.address.toLowerCase() === a.toLowerCase())?.value ?? 0) / total,
+      }))
+      .sort((x, y) => Math.abs(y.now - y.w) - Math.abs(x.now - x.w))[0];
+    const moves = trades
+      .map(
+        (t) => `${t.side === "sell" ? "selling" : "buying"} $${t.usd.toFixed(2)} ${name(t.token)}`,
+      )
+      .join(", ");
+    const reason = `${name(worst.a)} is ${(worst.now * 100).toFixed(0)}% of the portfolio vs a ${(worst.w * 100).toFixed(0)}% target: ${moves}.`;
+    const usd = trades.filter((t) => t.side === "sell").reduce((s, t) => s + t.usd, 0);
+
+    const { id } = insert.get(now, "rebalance", null, usd, reason, config.mode) as { id: number };
+    if (config.mode === "dry") {
+      finish.run("dry-run", "[]", null, id);
+      return log(1)[0];
+    }
+    const hashes = (rs: { swap: SwapResult }[] = []) =>
+      JSON.stringify(rs.flatMap((r) => (r.swap.order.txHash ? [r.swap.order.txHash] : [])));
+    try {
+      finish.run("executed", hashes(await agent.rebalance(config.targets, DRIFT)), null, id);
+    } catch (e) {
+      const err = e as Error & { results?: { swap: SwapResult }[] };
+      finish.run(statusOf(err), hashes(err.results), err.message, id);
+    }
+    return log(1)[0];
   }
 
   /** What the agent would decide at `at` (time travel for the demo). Never trades, never logs. */

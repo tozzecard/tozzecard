@@ -32,6 +32,7 @@ function setup(opts: {
   spread?: number;
   /** Executable quote vs the close, e.g. -0.03 = sale fetches 3% less. */
   quoted?: number;
+  targets?: Record<string, number>;
 }) {
   const calls: string[] = [];
   const agent: AgentPort = {
@@ -49,12 +50,16 @@ function setup(opts: {
       calls.push(`refill ${card} ${usd1}`);
       return "0xrefill";
     },
+    rebalance: async () => {
+      calls.push("rebalance");
+      return [{ swap: swapped("0xreb1") }, { swap: swapped("0xreb2") }];
+    },
     ...opts.agent,
   };
   const config: SchedulerConfig = {
     mode: opts.mode ?? "live",
     card: "0xcard",
-    targets: { [NVDA]: 0.5, [TSLA]: 0.5 },
+    targets: opts.targets ?? { [NVDA]: 0.5, [TSLA]: 0.5 },
     weeklyEstimateUsd: 7 * 24, // $1/hour
     tzOffsetMinutes: 420,
     cardCreatedAt: FRI_1540, // new card: forecast = onboarding estimate
@@ -128,7 +133,7 @@ test("cooldown after an executed refill", async () => {
 });
 
 test("repeated no-ops are logged once", async () => {
-  const { s } = setup({ card: 500 });
+  const { s } = setup({ card: 500, targets: { [NVDA]: 0.7, [TSLA]: 0.3 } });
   expect(await s.tick(FRI_1540)).toMatchObject({ action: "none", status: "logged" });
   expect(await s.tick(FRI_1540 + 60_000)).toBeNull();
   expect(s.log()).toHaveLength(1);
@@ -175,4 +180,54 @@ test("preview time-travels without trading or logging", async () => {
   expect((await s.preview(SAT)).action).toBe("none");
   expect(calls).toEqual([]);
   expect(s.log()).toEqual([]);
+});
+
+// Holdings are NVDA $70 / TSLA $30 (+ a token outside the targets) against 50/50 targets.
+test("rebalance (dry): open market, no refill due, drift over 5%: logs the trades once a day", async () => {
+  const { s, calls } = setup({ mode: "dry", card: 500 });
+  const e = await s.tick(FRI_1540);
+  expect(e).toMatchObject({ action: "rebalance", status: "dry-run" });
+  expect(e?.reason).toBe(
+    "TSLAB is 30% of the portfolio vs a 50% target: selling $20.00 NVDAon, buying $20.00 TSLAB.",
+  );
+  expect((await s.tick(FRI_1540 + 60_000))?.action).toBe("none");
+  expect(calls).toEqual([]);
+});
+
+test("rebalance (live): runs the agent and keeps the tx hashes", async () => {
+  const { s, calls } = setup({ card: 500 });
+  expect(await s.tick(FRI_1540)).toMatchObject({
+    action: "rebalance",
+    status: "executed",
+    txs: ["0xreb1", "0xreb2"],
+  });
+  expect(calls).toEqual(["rebalance"]);
+});
+
+test("rebalance: a failed leg keeps the done swaps and is not retried the same day", async () => {
+  let runs = 0;
+  const { s } = setup({
+    card: 500,
+    agent: {
+      rebalance: async () => {
+        runs++;
+        throw Object.assign(new Error("swap 9 FAILED"), { results: [{ swap: swapped("0xsold") }] });
+      },
+    },
+  });
+  expect(await s.tick(FRI_1540)).toMatchObject({ status: "failed", txs: ["0xsold"] });
+  await s.tick(FRI_1540 + 10 * 60_000);
+  expect(runs).toBe(1);
+});
+
+test("rebalance waits for the market: none on a Saturday", async () => {
+  const { s, calls } = setup({ card: 500 });
+  expect((await s.tick(SAT))?.action).toBe("none");
+  expect(calls).toEqual([]);
+});
+
+test("a due refill wins over the rebalance", async () => {
+  const { s, calls } = setup({});
+  expect((await s.tick(FRI_1540))?.action).toBe("refill");
+  expect(calls).not.toContain("rebalance");
 });
