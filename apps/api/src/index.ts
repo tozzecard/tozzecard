@@ -85,7 +85,6 @@ if (merchant) {
   console.warn("MERCHANT_PAY_TO not set: /merchant routes disabled");
 }
 
-// PORT is set by the host (Railway); API_PORT for local runs.
 // Refill scheduler (plan §3.3). Off unless AGENT_MODE is "dry" (log only) or "live" (trades).
 const mode = process.env.AGENT_MODE;
 if (mode === "dry" || mode === "live") {
@@ -138,6 +137,7 @@ if (mode === "dry" || mode === "live") {
   console.warn("AGENT_MODE not dry/live: scheduler off");
 }
 
+// PORT is set by docker-compose.yml; API_PORT for local runs.
 export default {
   port: Number(process.env.PORT ?? process.env.API_PORT ?? 8787),
   fetch: app.fetch,
