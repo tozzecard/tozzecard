@@ -192,7 +192,7 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [x] Forecaster v1 — `apps/api/src/forecast.ts`
 - [x] Kalender bursa AS + perencana refill (3.3, 3.4) — `calendar.ts`, `refill.ts` (keputusan murni)
 - [x] Scheduler eksekusi + log keputusan (3.6) — `scheduler.ts`, `AGENT_MODE=off|dry|live`, `/agent/decisions`, `/agent/preview?at=` (time travel)
-- [ ] Rebalance harian (3.5) di scheduler
+- [x] Rebalance harian (3.5) di scheduler — sekali per hari bursa NY, saat buka, refill didahulukan
 - [x] Server merchant demo B402 (402 → verify → settle) — kode + tes; live menunggu izin B402 di portal
 - [ ] DB: user, target alokasi, pembayaran, log keputusan
 - [ ] API untuk frontend: portofolio, saldo kartu, feed, strategi
