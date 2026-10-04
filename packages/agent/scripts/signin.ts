@@ -7,7 +7,12 @@
 // Run: bun packages/agent/scripts/signin.ts
 import { cli, session } from "../src";
 
-const before = await session();
+// A dead session can make every status call fail ("illegal parameter") until a new sign-in,
+// so a failed check means "sign in", not "stop".
+const before = await session().catch((e: Error) => {
+  console.log(`Session check failed (${e.message}); signing in again.`);
+  return { connected: false };
+});
 if (before.connected) {
   console.log("Already signed in:", before);
   process.exit(0);
