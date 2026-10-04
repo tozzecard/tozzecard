@@ -4,6 +4,7 @@ import { Database } from "bun:sqlite";
 import * as agent from "@tozzecard/agent";
 import { clientFromEnv } from "@tozzecard/binance";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { createPublicClient, erc20Abi, formatUnits, http } from "viem";
 import { bsc } from "viem/chains";
 import { createMarket } from "./market";
@@ -33,6 +34,15 @@ tick();
 setInterval(tick, POLL_MS);
 
 const app = new Hono();
+
+// The web app (apps/web) calls us from the browser. PAYMENT-RESPONSE carries the B402 receipt.
+app.use(
+  "*",
+  cors({
+    origin: (process.env.WEB_ORIGIN ?? "http://localhost:3000").split(","),
+    exposeHeaders: [RECEIPT_HEADER],
+  }),
+);
 
 // JSON errors for the app, with baw's name (SESSION_EXPIRED, TIMEOUT) so the UI can say why.
 app.onError((e, c) => {
@@ -99,23 +109,24 @@ if (mode === "dry" || mode === "live") {
   };
   if (!/^0x[0-9a-fA-F]{40}$/.test(config.card)) throw new Error("CARD_ADDRESS must be set");
   const rpc = createPublicClient({ chain: bsc, transport: http(env.BSC_RPC_URL) });
+  const cardBalanceUsd = async () =>
+    Number(
+      formatUnits(
+        await rpc.readContract({
+          address: USD1.address as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [config.card as `0x${string}`],
+        }),
+        USD1.decimals,
+      ),
+    );
   const scheduler = createScheduler({
     db,
     config,
     agent,
     markets: market.all,
-    cardBalanceUsd: async () =>
-      Number(
-        formatUnits(
-          await rpc.readContract({
-            address: USD1.address as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "balanceOf",
-            args: [config.card as `0x${string}`],
-          }),
-          USD1.decimals,
-        ),
-      ),
+    cardBalanceUsd,
     spends: () => merchant?.spendsOf(config.card) ?? [],
   });
 
@@ -127,6 +138,43 @@ if (mode === "dry" || mode === "live") {
 
   app.get("/agent/decisions", (c) => c.json(scheduler.log(Number(c.req.query("limit") ?? 50))));
   app.get("/agent/session", async (c) => c.json(await agent.session()));
+
+  // Portfolio screen: agent wallet holdings (with weights vs targets and market data) + card.
+  // ponytail: every call runs baw (a few seconds); cache it if the UI polls often.
+  const targets = new Map(
+    Object.entries(config.targets).map(([a, w]) => [a.toLowerCase(), w] as const),
+  );
+  app.get("/portfolio", async (c) => {
+    const [held, cardUsd] = await Promise.all([agent.holdings(), cardBalanceUsd()]);
+    const byAddress = new Map(market.all().map((m) => [m.address, m]));
+    const totalUsd = held.reduce((s, h) => s + Number(h.value), 0);
+    return c.json({
+      card: { address: config.card, usd1: cardUsd },
+      totalUsd,
+      holdings: held.map((h) => {
+        const address = h.address.toLowerCase();
+        const m = byAddress.get(address);
+        return {
+          symbol: h.symbol,
+          address,
+          balance: h.balance,
+          valueUsd: Number(h.value),
+          weight: totalUsd ? Number(h.value) / totalUsd : 0,
+          target: targets.get(address) ?? 0,
+          market: m
+            ? {
+                ticker: m.ticker,
+                platform: m.platform,
+                status: m.status,
+                tokenPrice: m.tokenPrice,
+                closeRef: m.closeRef,
+                spreadVsClose: m.spreadVsClose,
+              }
+            : null,
+        };
+      }),
+    });
+  });
   // Time travel for the demo: /agent/preview?at=2026-10-02T19:40:00Z. Never trades.
   app.get("/agent/preview", async (c) => {
     const at = Date.parse(c.req.query("at") ?? "") || Date.now();
