@@ -9,7 +9,7 @@ const PREFIX = "/build";
 
 /**
  * `statusInfo.marketStatus` as observed. Docs list "pause"; the API sends "paused".
- * bStock tokens send null (no market-hours data at all).
+ * bStock tokens send null (no market-hours data at all). "offhours" seen on weekends (3 Oct, #31).
  */
 export type MarketStatus =
   | "premarket"
@@ -17,6 +17,7 @@ export type MarketStatus =
   | "postmarket"
   | "overnight"
   | "closed"
+  | "offhours"
   | "pause"
   | "paused";
 

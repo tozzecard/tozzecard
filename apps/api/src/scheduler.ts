@@ -4,11 +4,13 @@
 //   - a swap that times out while PENDING is "unknown": no new trade until someone checks it
 //   - a cooldown after each executed refill, and one tick at a time
 //   - a signed-out Agentic Wallet is "blocked", not retried
+//   - with the market shut, a sale must pass an executable quote, not just the on-chain price
 import type { Database } from "bun:sqlite";
-import type { Holding, SwapResult } from "@tozzecard/agent";
+import { type Holding, type Quote, type SwapResult, USDT } from "@tozzecard/agent";
+import { isRegularOpen } from "./calendar";
 import { forecast, type Spend } from "./forecast";
 import type { MarketView } from "./market";
-import { type Decision, type Position, planRefill } from "./refill";
+import { DEFAULTS, type Decision, type Position, planRefill } from "./refill";
 
 const COOLDOWN_MS = 5 * 60_000;
 const UNKNOWN_BLOCKS_MS = 30 * 60_000;
@@ -17,6 +19,7 @@ const UNSELLABLE = new Set(["UNSUPPORTED", "ASSET_PAUSED", "ASSET_LIMITED", "MAR
 
 export interface AgentPort {
   holdings(): Promise<Holding[]>;
+  quote(from: string, to: string, qty: string): Promise<Quote>;
   sellForCard(token: string, amount: string): Promise<SwapResult[]>;
   refill(cardAddress: string, usd1: string): Promise<string>;
 }
@@ -76,6 +79,11 @@ export function createScheduler(deps: {
       txs: JSON.parse(String(r.txs)),
     }));
 
+  const marketOf = (address: string) =>
+    deps.markets().find((m) => m.address.toLowerCase() === address);
+  /** Token units worth `usd` at `price`, rounded down to baw's 8 decimals. */
+  const qtyFor = (usd: number, price: number) => (Math.floor((usd / price) * 1e8) / 1e8).toFixed(8);
+
   async function positions(): Promise<{ positions: Position[]; prices: Map<string, number> }> {
     const byAddress = new Map(deps.markets().map((m) => [m.address.toLowerCase(), m]));
     const targets = new Map(
@@ -114,7 +122,46 @@ export function createScheduler(deps: {
       },
       now,
     );
-    return { decision: planRefill({ now, cardUsd, forecast: f, positions: p }), prices };
+    const d = planRefill({ now, cardUsd, forecast: f, positions: p });
+    return { decision: isRegularOpen(now) ? d : await checkQuote(d, prices), prices };
+  }
+
+  /**
+   * #31: off-hours the on-chain price stays pinned to Friday's close (±0.01% on 3 Oct), so the
+   * planner's spread reads ~0% all weekend. Before a closed-market sale, ask what the sale would
+   * actually fetch; hold unless that is within maxClosedSpread of the close. No quote, no sale.
+   */
+  async function checkQuote(d: Decision, prices: Map<string, number>): Promise<Decision> {
+    if (d.action !== "refill") return d;
+    const m = marketOf(d.address);
+    const price = prices.get(d.address) ?? 0;
+    const hold = (why: string, spread?: number): Decision => ({
+      action: "hold",
+      symbol: d.symbol,
+      spread,
+      reason: `Card needs $${d.usd.toFixed(2)} but the market is closed and ${why}. Waiting for the open.`,
+      needUsd: d.needUsd,
+      horizon: d.horizon,
+    });
+    if (!m?.closeRef || !(price > 0)) return hold(`there is no close reference for ${d.symbol}`);
+    const qty = qtyFor(d.usd, price);
+    let got: number;
+    try {
+      got = Number((await agent.quote(d.address, USDT, qty)).toCoinAmount);
+    } catch (e) {
+      return hold(`the sale could not be quoted (${(e as Error).message})`);
+    }
+    const fair = m.closeRef.perShare * m.ratio;
+    const spread = got / Number(qty) / fair - 1;
+    if (Math.abs(spread) > DEFAULTS.maxClosedSpread)
+      return hold(
+        `selling ${d.symbol} now would fetch ${(spread * 100).toFixed(1)}% vs Friday's close`,
+        spread,
+      );
+    return {
+      ...d,
+      reason: `${d.reason} Executable quote: ${(spread * 100).toFixed(2)}% vs the close.`,
+    };
   }
 
   let running = false;
@@ -151,7 +198,7 @@ export function createScheduler(deps: {
       try {
         const price = prices.get(d.address) ?? 0;
         if (!(price > 0)) throw new Error(`no price for ${d.symbol}`);
-        const qty = (Math.floor((d.usd / price) * 1e8) / 1e8).toFixed(8);
+        const qty = qtyFor(d.usd, price);
         const legs = await agent.sellForCard(d.address, qty);
         for (const l of legs) if (l.order.txHash) txs.push(l.order.txHash);
         const usd1 = legs.at(-1)?.order.toTokenActualQty;

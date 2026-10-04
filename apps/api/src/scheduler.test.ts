@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
-import type { Holding, SwapResult } from "@tozzecard/agent";
+import type { Holding, Quote, SwapResult } from "@tozzecard/agent";
 import type { MarketView } from "./market";
 import { type AgentPort, createScheduler, type SchedulerConfig } from "./scheduler";
 
@@ -15,6 +15,8 @@ const view = (symbol: string, address: string, tokenPrice: number, spread = 0.00
     symbol,
     address,
     tokenPrice,
+    ratio: 1,
+    closeRef: { perShare: tokenPrice, at: 0 },
     spreadVsClose: spread,
     status: { reasonCode: "TRADING" },
   }) as unknown as MarketView;
@@ -28,10 +30,17 @@ function setup(opts: {
   card?: number;
   agent?: Partial<AgentPort>;
   spread?: number;
+  /** Executable quote vs the close, e.g. -0.03 = sale fetches 3% less. */
+  quoted?: number;
 }) {
   const calls: string[] = [];
   const agent: AgentPort = {
     holdings: async () => [holding(NVDA, 70), holding(TSLA, 30), holding("0xusdt", 3)],
+    quote: async (from, _to, qty) => {
+      calls.push(`quote ${from}`);
+      const price = from === NVDA ? 230 : 400;
+      return { toCoinAmount: String(Number(qty) * price * (1 + (opts.quoted ?? 0))) } as Quote;
+    },
     sellForCard: async (t, q) => {
       calls.push(`sell ${t} ${q}`);
       return [swapped("0xsell", "59.80")];
@@ -127,6 +136,35 @@ test("repeated no-ops are logged once", async () => {
 
 test("weekend with a wide spread holds instead of selling", async () => {
   const { s, calls } = setup({ card: 3, spread: -0.04 });
+  expect(await s.tick(SAT)).toMatchObject({ action: "hold", status: "logged" });
+  expect(calls).toEqual([]);
+});
+
+test("weekend: on-chain price pinned to the close, but the executable quote is 3% worse: hold (#31)", async () => {
+  const { s, calls } = setup({ card: 3, spread: 0.0001, quoted: -0.03 });
+  const e = await s.tick(SAT);
+  expect(e).toMatchObject({ action: "hold", status: "logged" });
+  expect(e?.reason).toContain("-3.0% vs Friday's close");
+  expect(calls).toEqual(["quote 0xnvda"]);
+});
+
+test("weekend: executable quote close to the close: sells the minimum", async () => {
+  const { s, calls } = setup({ card: 3, spread: 0.0001, quoted: -0.002 });
+  expect(await s.tick(SAT)).toMatchObject({ action: "refill", status: "executed" });
+  expect(calls[0]).toBe("quote 0xnvda");
+  expect(calls[1]).toMatch(/^sell 0xnvda /);
+});
+
+test("weekend: no quote, no sale", async () => {
+  const { s, calls } = setup({
+    card: 3,
+    spread: 0.0001,
+    agent: {
+      quote: async () => {
+        throw new Error("TIMEOUT");
+      },
+    },
+  });
   expect(await s.tick(SAT)).toMatchObject({ action: "hold", status: "logged" });
   expect(calls).toEqual([]);
 });
