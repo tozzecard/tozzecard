@@ -1,0 +1,22 @@
+# VPS deploy: `docker compose up -d --build`. Own project name, network and data dir, so nothing
+# is shared with other apps on the host. The API only listens on 127.0.0.1: the host's reverse
+# proxy terminates TLS for api.tozzecard.xyz and forwards here.
+name: tozzecard
+services:
+  api:
+    build: .
+    env_file: .env
+    environment:
+      PORT: 8787
+      DB_PATH: /data/tozzecard.sqlite
+      BINANCE_BAW_DIR: /data/baw
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8787}:8787"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:8787/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

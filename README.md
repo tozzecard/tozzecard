@@ -58,18 +58,26 @@ bun dev                # web on :3000, api on :8787
 
 | Service | Where | URL |
 | --- | --- | --- |
-| `apps/api` | Railway, Singapore, 5 GB volume at `/data` (SQLite) | https://api-production-c393.up.railway.app |
+| `apps/api` | VPS, Docker Compose, SQLite + baw session in `./data` | https://api.tozzecard.xyz |
 
 The API polls Binance every minute and keeps the last regular-session price as the close reference,
-so it has to run continuously. Singapore because the Binance Web3 API refuses US/UK/CA/NL traffic.
+so it has to run continuously. The VPS must sit outside the US/UK/CA/NL: the Binance Web3 API refuses that traffic.
 
 ```bash
-railway link            # project "tozzecard", service "api"
-railway up --service api --ci
+# on the VPS, once
+git clone https://github.com/tozzecard/tozzecard && cd tozzecard
+cp .env.example .env    # fill in keys; BINANCE_INSTANCE_ID=$(openssl rand -hex 32)
+docker compose up -d --build
+docker compose exec api bun packages/agent/scripts/signin.ts   # scan the QR in the Binance App
+
+# update
+git pull && docker compose up -d --build
 ```
 
-Build: [`Dockerfile`](Dockerfile), health check and restart policy: [`railway.json`](railway.json).
-Region is set on the service (`railway scale --service api southeast-asia=1`), not in `railway.json`:
-a `multiRegionConfig` there deployed without mounting the volume. Secrets live in Railway variables, never in the repo.
+[`docker-compose.yml`](docker-compose.yml) runs one container in its own Compose project (`tozzecard`),
+listening on `127.0.0.1:8787` only (`API_HOST_PORT` to change it). On our VPS (`/opt/tozzecard`) Caddy
+runs in another Compose project, so a `docker-compose.override.yml` there (not in git) also joins its
+network `deploy_default` as `tozzecard-api`, and the Caddyfile has `api.tozzecard.xyz { reverse_proxy tozzecard-api:8787 }`. Data lives in `./data` next to the compose
+file: back it up, it holds the close references and the Agentic Wallet session. Secrets live in `.env` on the VPS, never in the repo.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a PR.

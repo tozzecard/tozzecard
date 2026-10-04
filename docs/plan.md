@@ -188,7 +188,7 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [ ] L5 (sisi server)
 - [ ] Client Binance Web3 API (HMAC, retry, error mapping)
 - [x] Market-hours & spread service (RWA Data) — `apps/api/src/market.ts`, `GET /market/:symbol`
-- [x] **Deploy API** — Railway Singapura, 28 Sep, merekam acuan penutupan sejak sesi regular 28 Sep
+- [ ] **Deploy API** — VPS + Docker Compose di `api.tozzecard.xyz` (Railway dihapus 29 Sep, #25)
 - [x] Forecaster v1 — `apps/api/src/forecast.ts`
 - [x] Kalender bursa AS + perencana refill (3.3, 3.4) — `calendar.ts`, `refill.ts` (keputusan murni)
 - [x] Scheduler eksekusi + log keputusan (3.6) — `scheduler.ts`, `AGENT_MODE=off|dry|live`, `/agent/decisions`, `/agent/preview?at=` (time travel)
