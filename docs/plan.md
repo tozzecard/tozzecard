@@ -197,7 +197,7 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [ ] DB: user, target alokasi, pembayaran, log keputusan
 - [ ] API untuk frontend: portofolio, saldo kartu, feed, strategi
 - [x] Mode "time travel" untuk demo — `GET /agent/preview?at=` (keputusan saja; tx live lewat scheduler)
-- [ ] Kompilasi DX report
+- [ ] Kompilasi DX report — draft fakta di `dx-report.md` (4 Okt), Kiel tulis ulang
 
 ### Axel — Frontend & UX (+ pemilik demo video)
 - [ ] L5 (sisi browser), L6
