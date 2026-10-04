@@ -37,7 +37,7 @@ Full design: [`docs/plan.md`](docs/plan.md). Evidence behind every technical cla
 | --- | --- | --- |
 | **Fajar** ([@FjrREPO](https://github.com/FjrREPO)) | Agent & Web3 lead | Agentic Wallet, Trading/Transaction API, allowlist, fees |
 | **Kiel** ([@yeheskieltame](https://github.com/yeheskieltame)) | Backend & data lead | API client, forecaster, scheduler, **Developer Experience Report** |
-| **Axel** | Frontend & UX lead | App, passkey card, payments, **demo video** |
+| **Axel** ([@Lexirieru](https://github.com/Lexirieru)) | Frontend & UX lead | App, passkey card, payments, **demo video** |
 
 ## Getting started
 
