@@ -54,6 +54,22 @@ bun dev                # web on :3000, api on :8787
 | `bun run lint` / `bun run format` | Biome |
 | `bun test` | Tests |
 
+## API (`apps/api`)
+
+| Endpoint | |
+| --- | --- |
+| `GET /health` | Liveness + last market poll |
+| `GET /market`, `GET /market/:symbol` | Status, on-chain price, close reference, spread (`SPYon` for the market clock) |
+| `GET /portfolio` | Agent wallet holdings with weight vs target and market data, plus the card's USD1 |
+| `GET /agent/decisions?limit=` | Agent feed (decision log), newest first |
+| `GET /agent/session` | Agentic Wallet session: connected, Developer Mode, expiry |
+| `GET /agent/preview?at=ISO` | What the agent would decide at that time (demo time travel, never trades) |
+| `POST /merchant/orders`, `GET /merchant/orders/:id`, `/merchant/orders/:id/pay` | Demo merchant, B402 (x402) |
+
+`/portfolio` and `/agent/*` exist when `AGENT_MODE` is `dry` or `live`. Errors are `{error, code}`;
+`code: "SESSION_EXPIRED"` / `"NOT_LOGGED_IN"` means the Agentic Wallet needs a sign-in. Browser
+origins are allowed through `WEB_ORIGIN`.
+
 ## Deployment
 
 | Service | Where | URL |
