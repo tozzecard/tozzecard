@@ -10,6 +10,7 @@ import { bsc } from "viem/chains";
 import { cleanHolder, createCards } from "./card";
 import { createMarket } from "./market";
 import { createMerchant, PAYMENT_HEADER, RECEIPT_HEADER, USD1 } from "./merchant";
+import { docsHtml, openapi } from "./openapi";
 import { createScheduler, type Scheduler, type SchedulerConfig } from "./scheduler";
 import { createStrategyStore, parseStrategy } from "./strategy";
 
@@ -72,6 +73,10 @@ app.onError((e, c) => {
 });
 
 app.get("/health", (c) => c.json({ ok: true, marketPolledAt: market.lastPoll() || null }));
+
+// API reference for the web app (Swagger UI).
+app.get("/openapi.json", (c) => c.json(openapi));
+app.get("/docs", (c) => c.html(docsHtml));
 
 app.get("/market", (c) => c.json(market.all()));
 
