@@ -1,0 +1,28 @@
+---
+title: "Tozzecard"
+description: "Your stocks, managed by an agent. Your spending, from a card you own. And your card never sells at weekend prices."
+---
+
+Tokenized stocks trade around the clock; the market behind them does not. From Friday 4pm New York
+to Monday morning the reference price is frozen while the on-chain price drifts, so anyone who sells
+stock to pay for something over the weekend sells at a discount.
+
+Tozzecard splits the job in two:
+
+- **The agent wallet** holds your tokenized stocks (Ondo, bStocks). It buys, rebalances and refills your card.
+- **The card** is a wallet you own (passkey, no seed phrase) that holds USD1 and pays through B402, Binance's gasless x402 rail. It never needs BNB.
+
+<CardGroup cols={2}>
+  <Card title="How it works" icon="diagram-project" href="/how-it-works">
+    The two wallets, the refill, and what Binance and BNB Chain do.
+  </Card>
+  <Card title="API reference" icon="code" href="https://api.tozzecard.xyz/docs">
+    Every endpoint, also live as Swagger UI.
+  </Card>
+</CardGroup>
+
+| | |
+| --- | --- |
+| App | https://app.tozzecard.xyz |
+| API | https://api.tozzecard.xyz |
+| Code | https://github.com/tozzecard/tozzecard |

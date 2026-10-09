@@ -1,0 +1,35 @@
+---
+title: "Card sign-in"
+description: "Sign in with the card key itself: no passwords, no custody."
+---
+
+The browser already holds the card key (unlocked by the passkey). Signing a one-time message with it proves
+ownership. The first sign-in issues the card: number, expiry, CVV and holder name.
+
+```ts
+import { privateKeyToAccount } from "viem/accounts";
+
+const API = "https://api.tozzecard.xyz";
+const account = privateKeyToAccount(cardKey); // unlocked with the passkey
+
+const { message } = await fetch(`${API}/auth/challenge`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ address: account.address }),
+}).then((r) => r.json());
+
+const { token, card } = await fetch(`${API}/auth/verify`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ message, signature: await account.signMessage({ message }), holder: "Alex Lee" }),
+}).then((r) => r.json());
+
+const me = await fetch(`${API}/me`, { headers: { authorization: `Bearer ${token}` } }).then((r) => r.json());
+```
+
+<Note>
+The card number and CVV identify the card in the app only. They are not a payment-network number and nothing
+accepts them as a credential; payments are passkey-signed authorizations.
+</Note>
+
+Tokens last 30 days. `POST /auth/signout` ends one early.
