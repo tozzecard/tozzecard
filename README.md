@@ -85,7 +85,7 @@ origins are allowed through `WEB_ORIGIN`.
 
 | Service | Where | URL |
 | --- | --- | --- |
-| `apps/web` | Vercel project `tozzecard` (root `apps/web`) | https://app.tozzecard.xyz, https://tozzecard.xyz |
+| `apps/web` | Vercel, deployed by Axel | https://app.tozzecard.xyz |
 | `apps/api` | VPS, Docker Compose, SQLite + baw session in `./data` | https://api.tozzecard.xyz |
 | `apps/docs` | Mintlify (content directory `apps/docs`) | https://docs.tozzecard.xyz |
 
