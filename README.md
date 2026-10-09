@@ -26,6 +26,7 @@ Full design: [`docs/plan.md`](docs/plan.md). Evidence behind every technical cla
 | Path | What | Owner |
 | --- | --- | --- |
 | [`apps/web`](apps/web) | Cardholder app: onboarding, card, pay, portfolio, agent feed (Next.js) | Axel |
+| [`apps/docs`](apps/docs) | Public docs on Mintlify (docs.tozzecard.xyz); API reference generated from `/openapi.json` | Kiel |
 | [`apps/api`](apps/api) | Backend: market hours, spend forecaster, refill/rebalance scheduler, decision log (Bun + Hono) | Kiel |
 | [`packages/agent`](packages/agent) | Agent wallet execution: quote → dry-run → swap → refill | Fajar |
 | [`packages/binance`](packages/binance) | Binance Web3 API client (RWA Data, Market, Trading, Transaction, Wallet) | Kiel |
@@ -84,7 +85,9 @@ origins are allowed through `WEB_ORIGIN`.
 
 | Service | Where | URL |
 | --- | --- | --- |
+| `apps/web` | Vercel project `tozzecard` (root `apps/web`) | https://app.tozzecard.xyz, https://tozzecard.xyz |
 | `apps/api` | VPS, Docker Compose, SQLite + baw session in `./data` | https://api.tozzecard.xyz |
+| `apps/docs` | Mintlify (content directory `apps/docs`) | https://docs.tozzecard.xyz |
 
 The API polls Binance every minute and keeps the last regular-session price as the close reference,
 so it has to run continuously. The VPS must sit outside the US/UK/CA/NL: the Binance Web3 API refuses that traffic.

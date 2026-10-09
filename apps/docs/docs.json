@@ -1,0 +1,22 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Tozzecard",
+  "colors": { "primary": "#F0B90B", "light": "#F8D12F", "dark": "#C99400" },
+  "navbar": {
+    "links": [{ "label": "GitHub", "href": "https://github.com/tozzecard/tozzecard" }],
+    "primary": { "type": "button", "label": "Open the app", "href": "https://app.tozzecard.xyz" }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          { "group": "Get started", "pages": ["index", "how-it-works"] },
+          { "group": "Build on the API", "pages": ["card-sign-in", "paying"] }
+        ]
+      },
+      { "tab": "API reference", "openapi": "https://api.tozzecard.xyz/openapi.json" }
+    ]
+  }
+}
