@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./eip3009": "./src/eip3009.ts"
   },
   "scripts": {
     "typecheck": "tsc",

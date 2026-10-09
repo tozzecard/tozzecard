@@ -69,19 +69,30 @@ export function createMerchant(opts: { client: BinanceClient; db: Database; payT
     return k;
   }
 
+  const toOrder = (r: Record<string, string | number | null>): Order => ({
+    id: String(r.id),
+    amount: String(r.amount),
+    description: String(r.description),
+    status: r.status as Order["status"],
+    payer: r.payer as string | null,
+    tx: r.tx as string | null,
+    createdAt: Number(r.created_at),
+  });
+
   function get(id: string): Order | null {
     const r = read.get(id);
-    if (!r) return null;
-    return {
-      id: String(r.id),
-      amount: String(r.amount),
-      description: String(r.description),
-      status: r.status as Order["status"],
-      payer: r.payer as string | null,
-      tx: r.tx as string | null,
-      createdAt: Number(r.created_at),
-    };
+    return r ? toOrder(r) : null;
   }
+
+  /** Paid orders of one payer (a card), newest first. */
+  const paidBy = (payer: string): Order[] =>
+    (
+      db
+        .query(
+          "SELECT * FROM orders WHERE status = 'paid' AND lower(payer) = ? ORDER BY created_at DESC",
+        )
+        .all(payer.toLowerCase()) as Record<string, string | number | null>[]
+    ).map(toOrder);
 
   function create(amountUsd: string, description: string): Order {
     const amount = parseUnits(amountUsd, USD1.decimals);
@@ -154,15 +165,12 @@ export function createMerchant(opts: { client: BinanceClient; db: Database; payT
     get,
     pay,
     formatAmount: (o: Order) => formatUnits(BigInt(o.amount), USD1.decimals),
+    paidBy,
     /** Paid orders of one payer, as spends for the forecaster. */
     spendsOf: (payer: string) =>
-      (
-        db
-          .query("SELECT amount, created_at FROM orders WHERE status = 'paid' AND lower(payer) = ?")
-          .all(payer.toLowerCase()) as { amount: string; created_at: number }[]
-      ).map((r) => ({
-        at: r.created_at,
-        usd: Number(formatUnits(BigInt(r.amount), USD1.decimals)),
+      paidBy(payer).map((o) => ({
+        at: o.createdAt,
+        usd: Number(formatUnits(BigInt(o.amount), USD1.decimals)),
       })),
   };
 }

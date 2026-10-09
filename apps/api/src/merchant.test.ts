@@ -1,6 +1,9 @@
 import { Database } from "bun:sqlite";
 import { beforeEach, expect, test } from "bun:test";
 import type { BinanceClient, PaymentPayload, PaymentRequirements } from "@tozzecard/binance";
+import { paymentHeader, transferAuthorization } from "@tozzecard/binance/eip3009";
+import { verifyTypedData } from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { createMerchant, USD1 } from "./merchant";
 
 const PAY_TO = "0x2222222222222222222222222222222222222222";
@@ -133,4 +136,20 @@ test("unknown orders, garbage headers and non-positive amounts are refused", asy
   const order = merchant.create("1", "coffee");
   expect((await merchant.pay(order.id, "%%%not-base64-json")).status).toBe(400);
   expect(() => merchant.create("0", "free")).toThrow();
+});
+
+test("the card's payload (eip3009 helper) is accepted, signed by the card, and lists its spends", async () => {
+  const card = privateKeyToAccount(generatePrivateKey());
+  const order = merchant.create("1.25", "coffee");
+  const reqs = await requirementsFor(order.id);
+  const { authorization, typedData } = transferAuthorization(reqs, card.address, 1_000);
+  expect(authorization).toMatchObject({ to: PAY_TO, value: reqs.amount, validBefore: "1300" });
+  const signature = await card.signTypedData(typedData);
+  expect(await verifyTypedData({ ...typedData, address: card.address, signature })).toBe(true);
+
+  const h = paymentHeader("https://x", reqs, authorization, signature);
+  expect(JSON.parse(atob(h)).accepted).toEqual(reqs);
+  expect((await merchant.pay(order.id, h)).status).toBe(200);
+  expect(merchant.paidBy("0xPAYER").map((o) => o.id)).toEqual([order.id]);
+  expect(merchant.spendsOf("0xpayer")[0].usd).toBe(1.25);
 });
