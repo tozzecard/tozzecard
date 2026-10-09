@@ -59,6 +59,7 @@ bun dev                # web on :3000, api on :8787
 | Endpoint | |
 | --- | --- |
 | `GET /health` | Liveness + last market poll |
+| `GET /docs`, `GET /openapi.json` | Swagger UI and the OpenAPI 3.1 spec: https://api.tozzecard.xyz/docs |
 | `GET /market`, `GET /market/:symbol` | Status, on-chain price, close reference, spread (`SPYon` for the market clock) |
 | `POST /auth/challenge` `{address}` | One-time message for the card key to sign |
 | `POST /auth/verify` `{message, signature, holder?}` | Bearer token; the first sign-in issues the card (201) |
