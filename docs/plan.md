@@ -194,8 +194,8 @@ Detail dan sumber di [`research.md`](research.md#live-checks-must-pass-before-th
 - [x] Scheduler eksekusi + log keputusan (3.6) — `scheduler.ts`, `AGENT_MODE=off|dry|live`, `/agent/decisions`, `/agent/preview?at=` (time travel)
 - [x] Rebalance harian (3.5) di scheduler — sekali per hari bursa NY, saat buka, refill didahulukan
 - [x] Server merchant demo B402 (402 → verify → settle) — kode + tes; live menunggu izin B402 di portal
-- [ ] DB: user, target alokasi, pembayaran, log keputusan
-- [ ] API untuk frontend: portofolio, saldo kartu, feed, strategi
+- [x] DB: kartu + sesi, target alokasi (`strategy`), pembayaran, log keputusan — `card.ts`, `strategy.ts`
+- [x] API untuk frontend: `/auth/*`, `/me` (kartu, saldo), `/me/activity`, `/strategy`, `/portfolio`, feed
 - [x] Mode "time travel" untuk demo — `GET /agent/preview?at=` (keputusan saja; tx live lewat scheduler)
 - [ ] Kompilasi DX report — draft fakta di `dx-report.md` (4 Okt), Kiel tulis ulang
 
