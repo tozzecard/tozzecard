@@ -1,0 +1,14 @@
+---
+title: "Rebalance"
+description: "Keeping your stocks at the split you chose."
+icon: "scale-balanced"
+---
+
+Prices move, so your split drifts. Once per New York trading day, while the market is open, the agent checks it.
+
+- If any stock is more than **5%** away from its target, it sells the overweight ones for USDT and buys the underweight ones with it.
+- Trades under **$5** are skipped.
+- A stock with a target of 0% is sold in full.
+- Sells come first. Buys are scaled to the USDT the sells actually returned.
+- If a refill is due, there's no rebalance that day: the refill already sells the most overweight stock.
+- It runs once a day even if it fails; a broken trade is left for a person to look at.

@@ -1,0 +1,46 @@
+---
+title: "Agent wallet"
+description: "Your own Binance Agentic Wallet, and the address book that guards it."
+icon: "robot"
+---
+
+The agent wallet is a **Binance Agentic Wallet**: a wallet in your own Binance App, built for software agents to use. It holds your tokenized stocks.
+
+## Custody
+
+Binance runs it as an MPC wallet: the key is split and, per Binance, "never fully reconstructed on any single device or server". Keys can't be exported. Tozzecard never holds them.
+
+## How the agent uses it
+
+The agent drives the wallet through Binance's `baw` command-line tool, from our API server:
+
+| Command | Used for |
+|---|---|
+| `baw market-order swap` | Sell a stock for USD1 (bStocks) or USDT (Ondo), and USDT for USD1 |
+| `baw wallet send` | Send USD1 to your card |
+| balances and session | Read holdings, check the sign-in |
+
+Signing in needs your confirmation in the Binance App. A session lasts up to 48 hours. When it ends, every decision is logged as **blocked** until you confirm again.
+
+## The address book is the guard
+
+`baw wallet send` only sends to addresses in the wallet's **address book**, and the address book can only be edited in the Binance App, not through `baw`. You add your card address and nothing else, so the agent can fill your card and can't send anywhere else.
+
+We tested it on mainnet: a send to an address outside the address book is refused by Binance with error `351703`.
+
+<Warning>
+This holds only while **Developer Mode** is off. With Developer Mode on, the wallet can make arbitrary contract calls, and we confirmed on mainnet that a contract call can move tokens to an address outside the address book. The agent checks Developer Mode before every trade and refuses to run while it is on.
+</Warning>
+
+## Limits you set in the Binance App
+
+| Setting | Effect |
+|---|---|
+| Address book | Where money can go: your card only |
+| Daily limit | How much the agent can move in a day |
+| Tradable tokens | Which tokens it may trade |
+| Developer Mode | Keep it off |
+
+## Gas
+
+Ondo trades are relayed by Binance, so they cost the agent wallet no BNB. Plain swaps (such as USDT → USD1) and sends are paid by the agent wallet, about 0.0001 BNB each. Keep a little BNB there.
