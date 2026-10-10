@@ -13,6 +13,7 @@ import { CardFolder } from "../../../components/motion/card-folder";
 import { ActionPill, ActionRow, Card, Skeleton, SlidingTabs, Toast } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
 import { useCard } from "../../../hooks/useCard";
+import { useMode } from "../../../hooks/useMode";
 import type { ActivityItem } from "../../../lib/activity";
 import { type Activity, ApiError, api, bscscanTx, type Me } from "../../../lib/api";
 import { isActive } from "../../../lib/card";
@@ -65,7 +66,7 @@ export default function HomePage() {
   const [shown, setShown] = useState(false);
   const [receiving, setReceiving] = useState(false);
   // Card or agent wallet, switched from the top like Exchange / Wallet in the Binance app.
-  const [mode, setMode] = useState<Mode>("card");
+  const { mode, setMode } = useMode();
   const [welcome, setWelcome] = useState<Mode | null>(null);
   const endWelcome = useCallback(() => setWelcome(null), []);
   const switchTo = (next: Mode) => {

@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PreviewCard } from "../../../components/agent/PreviewCard";
 import { AgentFeed } from "../../../components/strategy/AgentFeed";
 import { Targets } from "../../../components/strategy/Targets";
 import { PageHeader, SlidingTabs, TabPanel } from "../../../components/ui";
+import { useMode } from "../../../hooks/useMode";
 
 type Tab = "targets" | "activity" | "preview";
 
@@ -16,6 +17,9 @@ const TABS = [
 /** Strategy: your targets, the agent's activity and time travel. */
 export default function StrategyPage() {
   const [tab, setTab] = useState<Tab>("targets");
+  const { setMode } = useMode();
+  // Strategy is the agent's tab: reaching it puts the app in agent mode.
+  useEffect(() => setMode("agent"), [setMode]);
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
