@@ -19,24 +19,24 @@ const CARDS: {
     minHeight: "min-h-[450px]",
     video: "/insight-1.mp4",
     overlay: "bg-[rgba(206,223,235,0.25)]",
-    stat: "1.25x",
-    description: "What you can spend against what you put in, once the card knows you",
+    stat: "Make",
+    description: "Your card, with your face or fingerprint. No seed phrase, no password",
     descriptionWidth: "max-w-[377px]",
   },
   {
     minHeight: "min-h-[350px]",
     video: "/insight-2.mp4",
     overlay: "bg-[rgba(247,236,233,0.6)]",
-    stat: "30 days",
-    description: "To pay it back. No interest, no fee you find out about later",
+    stat: "Connect",
+    description: "Your Binance wallet, then add your card as the one address it can send to",
     descriptionWidth: "max-w-[351px]",
   },
   {
     minHeight: "min-h-[450px]",
     video: "/insight-3.mp4",
     overlay: "bg-[rgba(218,218,218,0.2)]",
-    stat: "0",
-    description: "Credit history you need to start. One identity check is enough",
+    stat: "Choose",
+    description: "How your stocks are split and roughly what you spend a week. The agent does the rest",
     descriptionWidth: "max-w-[351px]",
   },
 ];
@@ -58,11 +58,11 @@ export function InsightsSection({ id }: { id?: string }) {
         <div className="flex max-w-[517px] flex-col gap-10">
           <BlurIn>
             <h2 className="font-helvetica-neue text-4xl font-medium leading-[1] tracking-[-0.03em] text-[#00041F] md:text-5xl lg:text-6xl lg:leading-[60px]">
-              The short version
+              Set it up once
             </h2>
           </BlurIn>
           <p className="font-helvetica-neue max-w-[361px] text-base text-[#49484F] md:text-lg lg:text-xl">
-            Three numbers worth knowing before you sign up
+            Three steps, then the agent takes it from there
           </p>
         </div>
 
