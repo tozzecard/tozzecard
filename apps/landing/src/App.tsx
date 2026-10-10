@@ -734,6 +734,63 @@ function ReachSection() {
   );
 }
 
+/**
+ * The Binance mark, animated, with its yellow backdrop keyed out by luminance so the ink sits on the
+ * page. Same engine split as the top-up video: VP9 alpha for Chrome and Firefox, HEVC alpha for
+ * WebKit. Plays once when it scrolls into view; reduced motion gets the final frame.
+ */
+function BinanceSection() {
+  const [ref, inView] = useInView<HTMLElement>();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const webkit = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    setSrc(webkit ? "/binance.mov" : "/binance.webm");
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !src || !inView) return;
+    video.muted = true;
+    void video.play().catch(() => {});
+  }, [src, inView]);
+
+  return (
+    <section ref={ref} className={`${GUTTER} py-16 text-center sm:py-24`}>
+      <div className="mx-auto w-full max-w-3xl">
+        {src ? (
+          <video
+            ref={videoRef}
+            key={src}
+            src={src}
+            poster="/binance-poster.png"
+            muted
+            playsInline
+            preload="auto"
+            className="aspect-video w-full"
+          />
+        ) : (
+          // biome-ignore lint/performance/noImgElement: the final frame standing in for the video, same size
+          <img
+            src="/binance-poster.png"
+            alt="Binance"
+            width={1280}
+            height={720}
+            className="aspect-video w-full"
+          />
+        )}
+      </div>
+      <Reveal delay={0.08}>
+        <p className="text-[15px] text-[#18161B]/60 sm:text-base">
+          Runs on your own Binance wallet.
+        </p>
+      </Reveal>
+    </section>
+  );
+}
+
 function FeaturesSection() {
   return (
     <section id={SECTION_FEATURES} className={`${GUTTER} scroll-mt-24 py-16 sm:py-24`}>
@@ -791,6 +848,7 @@ function Content() {
       <SpendSection />
       <ReachSection />
       <FeaturesSection />
+      <BinanceSection />
       <InsightsSection id={SECTION_STEPS} />
       <CounterSection />
       <QuoteCarousel id={SECTION_CARDHOLDERS} />
