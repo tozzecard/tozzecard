@@ -32,6 +32,31 @@
 
 html {
   height: 100%;
+  /* No visible scrollbar: the page scrolls with Lenis and the wheel, the bar is noise. */
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Lenis (from lenis/dist/lenis.css). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 /* min-height, not height: the document grows past one viewport once the
