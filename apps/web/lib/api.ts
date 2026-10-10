@@ -17,12 +17,15 @@ export interface Card {
   createdAt: number;
 }
 
-/** Identity check (issue #50). Absent while the API has no KYC; the agent link gates instead. */
+/** Identity check, `GET /me` `kyc` (#51). */
 export type KycStatus = "none" | "pending" | "approved" | "declined" | "duplicate";
 
 export interface Me {
+  /** The card's address. Absent on the older API, where it is `card.address`. */
+  address?: string;
+  /** Identity check (#51). Absent on the older API; the agent link gates instead. */
   kyc?: KycStatus;
-  /** Null until the card is issued, once the API gates issuing behind KYC (issue #50). */
+  /** Null until identity is approved (#51); the face is derived and its holder is the document's. */
   card: Card | null;
   balance: { usd1: number; bnb: number };
   agent: { linked: boolean; mode: "off" | "dry" | "live" };

@@ -18,9 +18,9 @@ export interface CardContextValue {
   /** The unlocked key, in memory for this visit only. Null after a reload until the next Face ID. */
   account: LocalAccount | null;
   /** New card: passkey, then the first sign-in, which issues the card face. */
-  create: (holder: string) => Promise<Card>;
+  create: (holder: string) => Promise<Card | null>;
   /** Existing card: passkey, then sign in. */
-  signIn: () => Promise<Card>;
+  signIn: () => Promise<Card | null>;
   /** The key for signing (a payment), asking for Face ID only if it is not unlocked yet. */
   unlock: () => Promise<LocalAccount>;
   signOut: () => Promise<void>;
@@ -53,7 +53,9 @@ async function authenticate(account: LocalAccount, holder?: string) {
     body: { address: account.address },
   });
   const signature = await account.signMessage({ message });
-  return api<{ token: string; card: Card }>("/auth/verify", {
+  // #51: `{token, address, kyc, card}` with `card` null until identity is approved. The older API
+  // returned only `{token, card}`, with the address on the card.
+  return api<{ token: string; address?: string; card: Card | null }>("/auth/verify", {
     method: "POST",
     body: { message, signature, ...(holder ? { holder } : {}) },
   });
@@ -70,8 +72,8 @@ export function CardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const start = useCallback(async (key: LocalAccount, holder?: string) => {
-    const { token, card } = await authenticate(key, holder);
-    const next = { token, address: card.address };
+    const { token, address, card } = await authenticate(key, holder);
+    const next = { token, address: address ?? card?.address ?? key.address };
     write(next);
     setSession(next);
     setAccount(key);
