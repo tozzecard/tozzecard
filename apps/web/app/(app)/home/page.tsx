@@ -4,12 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import { ReceiveSheet } from "../../../components/account/ReceiveSheet";
 import { ActivityList } from "../../../components/activity/ActivityList";
 import { CardArtwork } from "../../../components/card/CardArtwork";
+import { ActivateCard } from "../../../components/home/ActivateCard";
+import { AvailableHero } from "../../../components/home/AvailableHero";
+import { BalanceSection } from "../../../components/home/BalanceSection";
 import { CardFolder } from "../../../components/motion/card-folder";
-import { ActionPill, ActionRow, Card, Section, Skeleton } from "../../../components/ui";
+import { ActionPill, ActionRow, Card, Skeleton, Toast } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
+import { useCard } from "../../../hooks/useCard";
 import type { ActivityItem } from "../../../lib/activity";
-import { type Activity, bscscanTx, type Me } from "../../../lib/api";
-import { ago, signedUsd, usd } from "../../../lib/format";
+import { type Activity, api, bscscanTx, type Me } from "../../../lib/api";
+import { isActive } from "../../../lib/card";
+import { ago, signedUsd } from "../../../lib/format";
 
 /** "ALEX LEE" → "Alex Lee" for the folder tab; the card face keeps the embossed capitals. */
 const titleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
@@ -27,13 +32,16 @@ function toItems(rows: Activity[], now: number | null): ActivityItem[] {
   }));
 }
 
-/** Card tab (plan §3.2, §3.6): the card face, what it can spend, and its statement. */
+/** Home: what the card can spend, the card itself (or the step that activates it), its history. */
 export default function HomePage() {
-  const me = useApi<Me>("/me");
-  const activity = useApi<Activity[]>("/me/activity");
   const router = useRouter();
+  const { session } = useCard();
+  const me = useApi<Me>("/me", 15_000);
+  const activity = useApi<Activity[]>("/me/activity");
   const [shown, setShown] = useState(false);
-  const [sheet, setSheet] = useState<"receive" | null>(null);
+  const [receiving, setReceiving] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // The clock is read after mount: a relative time baked into server HTML breaks hydration.
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -43,95 +51,96 @@ export default function HomePage() {
   }, []);
 
   const items = useMemo(() => toItems(activity.data ?? [], now), [activity.data, now]);
-  const card = me.data?.card;
+  const preview = items.slice(0, 5);
+  const data = me.data;
+  const active = isActive(data);
+  const card = data?.card;
+
+  /** Activate: Didit when the API has it (issue #50), otherwise the agent-link steps. */
+  const activate = async () => {
+    if (!data?.kyc) return router.push("/activate");
+    setStarting(true);
+    setError(null);
+    try {
+      const { url } = await api<{ url: string }>("/kyc/session", {
+        method: "POST",
+        token: session?.token,
+      });
+      window.location.assign(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not start verification.");
+      setStarting(false);
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
-      <div className="mb-[26px] flex justify-center">
-        {card ? (
-          <CardFolder
-            title={titleCase(card.holder)}
-            ariaLabel={`Your card, ${card.holder}`}
-            cardNumber={card.number}
-            expiry={card.expiry}
-            cvv={card.cvv}
-            detailsVisible={shown}
-            onDetailsVisibleChange={setShown}
-            className="w-full max-w-[340px]"
-            card={
-              <CardArtwork
-                holder={card.holder}
-                number={card.number}
-                expiry={card.expiry}
-                detailsVisible={shown}
-              />
-            }
-          />
+      <div className="stagger">
+        <AvailableHero available={data?.balance.usd1} issued={active} />
+
+        {active ? (
+          <ActionRow className="mb-[22px]">
+            <ActionPill primary onClick={() => router.push("/pay")}>
+              Pay
+            </ActionPill>
+            <ActionPill onClick={() => setReceiving(true)}>Add money</ActionPill>
+          </ActionRow>
+        ) : null}
+
+        {!data ? (
+          <Skeleton className="mx-auto mb-[26px] aspect-[1.586] w-full max-w-[340px] rounded-[22px]" />
+        ) : active && card ? (
+          <div className="mb-[26px] flex justify-center">
+            <CardFolder
+              title={titleCase(card.holder)}
+              ariaLabel={`Your card, ${card.holder}`}
+              cardNumber={card.number}
+              expiry={card.expiry}
+              cvv={card.cvv}
+              detailsVisible={shown}
+              onDetailsVisibleChange={setShown}
+              className="w-full max-w-[340px]"
+              card={
+                <CardArtwork
+                  holder={card.holder}
+                  number={card.number}
+                  expiry={card.expiry}
+                  detailsVisible={shown}
+                />
+              }
+            />
+          </div>
         ) : (
-          <Skeleton className="aspect-[1.586] w-full max-w-[340px] rounded-[22px]" />
+          <ActivateCard
+            className="mb-[26px]"
+            kyc={data.kyc}
+            busy={starting}
+            onContinue={() => void activate()}
+          />
         )}
+
+        {active && data ? (
+          <BalanceSection className="mb-[22px]" usd1={data.balance.usd1} bnb={data.balance.bnb} />
+        ) : null}
+
+        <h2 className="mx-1 mb-2 text-sm font-medium text-muted">History</h2>
+        <Card className="px-5 pb-2 pt-1">
+          <ActivityList
+            items={preview}
+            loading={activity.loading}
+            now={now}
+            emptyTitle="Nothing yet"
+            emptyDescription="Payments and your agent's top-ups will show here."
+          />
+        </Card>
       </div>
 
-      <Card className="mb-4 px-5 py-5">
-        <div className="text-[13px] font-medium text-muted">Ready to spend</div>
-        <div className="mt-1 text-[40px] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-          {me.data ? usd(me.data.balance.usd1) : <Skeleton className="h-10 w-40" />}
-        </div>
-        <div className="mt-2 text-[13px] text-muted">USD1 on BNB Chain · no BNB needed to pay</div>
-        <ActionRow className="mt-4">
-          <ActionPill primary onClick={() => router.push("/pay")}>
-            Pay
-          </ActionPill>
-          <ActionPill onClick={() => setSheet("receive")} disabled={!card}>
-            Add money
-          </ActionPill>
-          <ActionPill onClick={() => router.push("/settings")}>Settings</ActionPill>
-        </ActionRow>
-      </Card>
-
-      {me.data && !me.data.agent.linked ? (
-        <Card className="mb-4 px-5 py-4">
-          <div className="text-[14px] font-semibold">Let the agent top up this card</div>
-          <p className="mt-1 text-[13px] text-muted">
-            In the Binance App, add this card&apos;s address to your Agentic Wallet address book. It
-            is the only address the agent will ever be able to send to.
-          </p>
-          <code className="mt-3 block break-all rounded-xl bg-pill px-3 py-2 font-mono text-[12px] text-ink-2">
-            {me.data.card.address}
-          </code>
-        </Card>
-      ) : null}
-
-      {me.data?.agent.linked ? (
-        <Card className="mb-4 flex items-center gap-3 px-5 py-4">
-          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-pos" />
-          <p className="text-[13px] text-ink-2">
-            {me.data.agent.mode === "live"
-              ? "Your agent tops up this card while the market is open."
-              : me.data.agent.mode === "dry"
-                ? "Your agent is planning top-ups but not trading yet."
-                : "Your agent is paused."}
-          </p>
-        </Card>
-      ) : null}
-
-      {me.error ? <p className="mb-4 text-center text-[13px] text-neg">{me.error}</p> : null}
-
-      <Section title="Activity">
-        <ActivityList
-          items={items}
-          loading={activity.loading}
-          now={now}
-          emptyTitle="No activity yet"
-          emptyDescription="Payments and the agent's top-ups show up here."
-        />
-      </Section>
-
       <ReceiveSheet
-        open={sheet === "receive"}
-        onClose={() => setSheet(null)}
+        open={receiving}
+        onClose={() => setReceiving(false)}
         address={card?.address ?? ""}
       />
+      <Toast open={Boolean(error ?? me.error)} message={error ?? me.error ?? ""} />
     </div>
   );
 }
