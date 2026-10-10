@@ -54,17 +54,16 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /**
- * One everyday purchase, start to finish. The point is that nothing was sold to
- * pay for the coffee: the card covered it, what was locked never moved, and the
- * record is what grows.
+ * Friday afternoon, the agent explaining itself. The point is that the card was filled before the
+ * weekend, from the stock that had grown too big, while the market was still open.
  */
 const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[] = [
-  { speaker: "you", text: "buy me a coffee" },
-  { speaker: "card", text: "done. $2, paid from your limit." },
-  { speaker: "you", text: "my top-up is still locked?" },
-  { speaker: "card", text: "all of it. you pay it back in 30 days." },
-  { speaker: "you", text: "and next month?" },
-  { speaker: "card", text: "settle on time and the same lock allows more.", emphasis: true },
+  { speaker: "you", text: "will my card cover the weekend?" },
+  { speaker: "card", text: "you usually spend about $80. it holds $20." },
+  { speaker: "you", text: "so you are selling something?" },
+  { speaker: "card", text: "$60 of NVDA. it grew past your target." },
+  { speaker: "you", text: "why now?" },
+  { speaker: "card", text: "the market closes in 30 minutes. after that, I wait.", emphasis: true },
 ];
 
 /**
