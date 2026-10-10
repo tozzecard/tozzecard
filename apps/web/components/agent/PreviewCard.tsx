@@ -67,7 +67,7 @@ export function PreviewCard() {
   return (
     <Card className="px-5 py-4">
       <div className="text-[14px] font-semibold">What the agent does at… (New York time)</div>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 grid grid-cols-3 gap-2">
         {PRESETS.map((p) => (
           <Button
             key={p.label}
@@ -76,6 +76,7 @@ export function PreviewCard() {
             variant={label === p.label ? "ink" : "glass"}
             onClick={() => void run(p)}
             disabled={busy}
+            className="min-w-0 flex-1 whitespace-nowrap !px-2 text-[13px]"
           >
             {p.label}
           </Button>
