@@ -11,7 +11,7 @@ and refills a passkey card wallet in USD1 while the US market is open; the card 
 real money, `baw` 1.10.0, Binance Web3 API (RWA Data, Trading, B402). 28 Sep – 11 Oct 2026, team of three,
 working from Indonesia; API server in Kuala Lumpur.
 
-Totals from our log: **50 notes, ~405 minutes lost**: AI stack 165, tokenized-stock data 105, docs 65,
+Totals from our log: **51 notes, ~405 minutes lost**: AI stack 165, tokenized-stock data 105, docs 65,
 API 50, onboarding 20.
 
 ---
@@ -129,7 +129,8 @@ library/HTTP API instead of a CLI per wallet.
   premarket (28 Sep: bStock +3…+17, Ondo +9…+68). What a weekend seller pays is Ondo's spread and fixed cost, not
   the weekend itself. Ondo's buy side was cheaper than the reference for 4 of 7 tickers (e.g. MSFT −45 bps at $20),
   sell side always worse.
-  `TODO Fajar: second sample Sat 10 / Sun 11 Oct (#31) before 11 Oct 12:00 UTC; one weekend is one sample.`
+  Second weekend (Sat 10 Oct 16:19 UTC, from the VPS): the same. bStock +4…+20 bps, Ondo +10…+69 bps, Ondo buy
+  side under the reference for 5 of 7. Two weekends, both quiet; we have no sample from a weekend with news.
 - **On-chain vs reference gap**: not measurable from the API, since `referencePrice` is derived from the on-chain
   price (§3). We keep our own close reference.
 - **bStocks vs Ondo, same underlying**:
