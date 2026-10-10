@@ -25,11 +25,11 @@ export function ActivateCard({
 }) {
   const [title, body, action] =
     kyc === "pending"
-      ? ["Verification in review", "We'll unlock your card when it's approved.", null]
+      ? ["Verifying your ID", "This updates by itself. It can take a few minutes.", null]
       : kyc === "duplicate"
-        ? ["This identity already has a card", "One person, one card.", null]
+        ? ["This ID already has a card", "One person, one card.", null]
         : kyc === "declined"
-          ? ["We could not verify you", "Try again with a clear photo of your ID.", "Try again"]
+          ? ["Verification failed", "Try again with a clear photo of your ID.", "Try again"]
           : kyc === "none"
             ? ["Activate your card", "An ID photo and a selfie. About a minute.", "Continue"]
             : ["Activate your card", "", "Continue"];
