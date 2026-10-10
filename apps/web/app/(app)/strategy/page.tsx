@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { PreviewCard } from "../../../components/agent/PreviewCard";
 import { AgentFeed } from "../../../components/strategy/AgentFeed";
-import { StatusPills } from "../../../components/strategy/StatusPills";
 import { Targets } from "../../../components/strategy/Targets";
 import { PageHeader, SlidingTabs, TabPanel } from "../../../components/ui";
 
@@ -14,17 +13,16 @@ const TABS = [
   { key: "preview", label: "Preview" },
 ] as const;
 
-/** Strategy: market and agent status, then targets, the agent's activity and time travel. */
+/** Strategy: your targets, the agent's activity and time travel. */
 export default function StrategyPage() {
   const [tab, setTab] = useState<Tab>("targets");
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
       <PageHeader title="Strategy" />
-      <StatusPills />
       {/* The padding lives on this wrapper: the sliding highlight is positioned against the row
           itself, so padding on the row would push the buttons off the highlight. */}
-      <div className="mt-5 mb-4 rounded-full border border-line bg-white p-1">
+      <div className="mb-4 rounded-full border border-line bg-white p-1">
         <SlidingTabs options={TABS} value={tab} onChange={setTab} label="Strategy sections" />
       </div>
       <TabPanel key={tab}>
