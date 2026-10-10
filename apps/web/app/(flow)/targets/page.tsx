@@ -28,7 +28,7 @@ const CHOICES = [
  * Onboarding step 4 (plan §3.1): which stocks and in what split, and roughly what you spend a
  * week. PUT /strategy; only the card the server's agent refills may change it (403 otherwise).
  */
-export default function StrategyPage() {
+export default function TargetsPage() {
   const router = useRouter();
   const { session } = useCard();
   const current = useApi<Strategy>("/strategy", 600_000);
@@ -70,7 +70,7 @@ export default function StrategyPage() {
         body: { targets, weeklyEstimateUsd: Number(weekly) },
       });
       setSaved(true);
-      window.setTimeout(() => router.push("/portfolio"), 700);
+      window.setTimeout(() => router.push("/strategy"), 700);
     } catch (e) {
       setError(
         e instanceof ApiError && e.status === 403
