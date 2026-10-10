@@ -5,29 +5,29 @@ import { APP_URL } from "../app-url";
 
 const FAQS: { question: string; answer: string }[] = [
   {
-    question: "What do I need to get started?",
+    question: "Who holds my money?",
     answer:
-      "A phone, a debit card to top up, and one identity check. The check happens once, before your first spend, and you are never asked for it again.",
+      "You do. Your stocks sit in your own Binance agent wallet, and your dollars sit on a card that only your face or fingerprint unlocks. We never hold either, and there is no pool or vault of ours.",
   },
   {
-    question: "Do I spend my own money?",
+    question: "What stops the agent from sending my money somewhere else?",
     answer:
-      "No. What you put in stays as collateral, held as AUSD, a digital dollar by Agora, and keeps earning. The card spends against it, and you pay back what you used.",
+      "Binance does. The agent wallet can only send to addresses in its address book, and only you can edit that, in the Binance App. Put your card there and nothing else, and your card is the only place the money can go.",
   },
   {
-    question: "How is my limit decided?",
+    question: "What if I need money on a weekend and the card runs low?",
     answer:
-      "It starts below what you locked, and it grows every time you pay on time. Nothing else moves it, and nobody sets it by hand.",
+      "The agent checks the price it would actually get. If it is within 1% of Friday's close, it sells the smallest amount it can. If not, it holds and tells you, rather than selling at a bad price.",
   },
   {
-    question: "What happens if I pay late?",
+    question: "Why does the card hold USD1?",
     answer:
-      "After a 3-day grace period, what you owe is taken from your collateral and the account stops spending. No late fee, no interest, but the record stays.",
+      "It is a dollar stablecoin that can be paid with a signature alone, so Binance can carry the payment and cover the fee. That is why your card never needs BNB.",
   },
   {
-    question: "Is my collateral safe while I owe money?",
+    question: "Which stocks can the agent hold?",
     answer:
-      "It stays in your account, earning, while you pay back. Only a missed due date lets any of it be taken, and then only what you owe.",
+      "Tokenized stocks from Ondo and bStocks on BNB Chain, such as NVDA, AAPL or MSFT. You pick the split, and the agent buys, sells and rebalances to keep it there.",
   },
 ];
 
