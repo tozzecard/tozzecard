@@ -1524,8 +1524,9 @@
   place-items: center;
   overflow: hidden;
   border: 1px solid #ececec;
-  border-radius: 13px;
+  border-radius: 999px;
   background: #ffffff;
+  box-shadow: 0 10px 18px -14px rgba(17, 19, 22, 0.52);
 }
 
 .stockTile img {

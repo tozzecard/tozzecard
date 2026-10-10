@@ -303,9 +303,10 @@ function StockFloat({ ticker }: { ticker: "NVDA" | "AAPL" | "MSFT" | "TSLA" }) {
   );
 }
 
+// NVIDIA sits in the middle, the row that stands out.
 const SHOWN = [
-  { ticker: "NVDA", name: "NVIDIA" },
   { ticker: "AAPL", name: "Apple" },
+  { ticker: "NVDA", name: "NVIDIA" },
   { ticker: "MSFT", name: "Microsoft" },
 ];
 
@@ -319,7 +320,7 @@ function StocksVisual() {
         return (
           <div
             key={s.ticker}
-            className={`${styles.assetRow} ${i === 0 ? styles.assetRowActive : ""}`}
+            className={`${styles.assetRow} ${i === 1 ? styles.assetRowActive : ""}`}
           >
             <StockLogo ticker={s.ticker} />
             <span className={styles.assetText}>
