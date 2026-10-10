@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { StockLogo } from "../../../components/StockLogo";
 import { Card, PageHeader, Section, Skeleton } from "../../../components/ui";
@@ -76,7 +77,18 @@ export default function PortfolioPage() {
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
-      <PageHeader title="Stocks" description="Held in your own Binance Agentic Wallet." />
+      <PageHeader
+        title="Stocks"
+        description="Held in your own Binance Agentic Wallet."
+        action={
+          <Link
+            href="/strategy"
+            className="inline-flex h-10 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink-2"
+          >
+            Set targets
+          </Link>
+        }
+      />
 
       <div className="mb-5">
         <MarketClock />
