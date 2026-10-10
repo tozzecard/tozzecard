@@ -2,10 +2,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useMode } from "../../hooks/useMode";
 
-const TABS = [
-  { href: "/home", label: "Home", icon: <path d="M4 11l8-7 8 7M6 10v9h12v-9" /> },
-  {
+const HOME = { href: "/home", label: "Home", icon: <path d="M4 11l8-7 8 7M6 10v9h12v-9" /> };
+const ACCOUNT = {
+  href: "/account",
+  label: "Account",
+  icon: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20a8 8 0 0 1 16 0" />
+    </>
+  ),
+};
+/** The middle tab follows the mode: the card pays, the agent wallet has a strategy. */
+const MIDDLE = {
+  card: {
+    href: "/pay",
+    label: "Pay",
+    icon: (
+      <>
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+      </>
+    ),
+  },
+  agent: {
     href: "/strategy",
     label: "Strategy",
     icon: (
@@ -16,17 +40,7 @@ const TABS = [
       </>
     ),
   },
-  {
-    href: "/account",
-    label: "Account",
-    icon: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20a8 8 0 0 1 16 0" />
-      </>
-    ),
-  },
-] as const;
+};
 
 function Icon({ children }: { children: ReactNode }) {
   return (
@@ -48,6 +62,8 @@ function Icon({ children }: { children: ReactNode }) {
 
 export function BottomNav() {
   const path = usePathname();
+  const { mode } = useMode();
+  const TABS = [HOME, MIDDLE[mode], ACCOUNT];
   return (
     <>
       {/* progressive blur overlay above the nav */}

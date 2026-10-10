@@ -5,10 +5,14 @@ import { AuthGate } from "../../components/AuthGate";
 import { AccountMenu } from "../../components/desktop/AccountMenu";
 import { BottomNav, DesktopNav, SHELL, TopBlur } from "../../components/ui";
 import { useIsDesktop } from "../../hooks/useIsDesktop";
+import { useMode } from "../../hooks/useMode";
 import { useNav } from "../../hooks/useNav";
 
-const SHELL_ROUTES = ["/home", "/strategy", "/account"] as const;
-type ShellRoute = (typeof SHELL_ROUTES)[number];
+/** Swipe order follows the bottom bar, which follows the mode. */
+const ROUTES = {
+  card: ["/home", "/pay", "/account"],
+  agent: ["/home", "/strategy", "/account"],
+} as const;
 type SwipeStart = { x: number; y: number };
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -17,7 +21,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const swipeStart = useRef<SwipeStart | null>(null);
   const [enterDirection, setEnterDirection] = useState<"next" | "prev">("next");
-  const routeIndex = SHELL_ROUTES.indexOf(pathname as ShellRoute);
+  const { mode } = useMode();
+  const SHELL_ROUTES: readonly string[] = ROUTES[mode];
+  const routeIndex = SHELL_ROUTES.indexOf(pathname);
 
   const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (isDesktop || routeIndex === -1 || event.touches.length !== 1) return;
