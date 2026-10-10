@@ -58,12 +58,12 @@ const NAV_ITEMS: NavItem[] = [
  * weekend, from the stock that had grown too big, while the market was still open.
  */
 const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[] = [
-  { speaker: "you", text: "will my card cover the weekend?" },
-  { speaker: "card", text: "you usually spend about $80. it holds $20." },
-  { speaker: "you", text: "so you are selling something?" },
-  { speaker: "card", text: "$60 of NVDA. it grew past your target." },
+  { speaker: "you", text: "enough for the weekend?" },
+  { speaker: "card", text: "you spend ~$80. card has $20." },
+  { speaker: "you", text: "so?" },
+  { speaker: "card", text: "selling $60 of NVDA." },
   { speaker: "you", text: "why now?" },
-  { speaker: "card", text: "the market closes in 30 minutes. after that, I wait.", emphasis: true },
+  { speaker: "card", text: "market closes in 30 min.", emphasis: true },
 ];
 
 /**
