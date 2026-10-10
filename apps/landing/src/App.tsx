@@ -14,6 +14,7 @@ import { ClosingFooter } from "./components/ClosingFooter";
 import { CounterSection } from "./components/CounterSection";
 import { InsightsSection } from "./components/InsightsSection";
 import { QuoteCarousel } from "./components/QuoteCarousel";
+import { SmoothScroll } from "./components/SmoothScroll";
 
 const BG_IMAGE_1 =
   "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260721_161708_64fad17a-06cc-4227-b6d2-1fefec159ec7.png&w=1920&q=85";
@@ -105,6 +106,12 @@ function prefersReducedMotion() {
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
+  // Through Lenis when it runs, so a nav jump eases like the wheel does.
+  if (window.__lenis) {
+    const margin = Number.parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+    window.__lenis.scrollTo(el, { offset: -margin });
+    return;
+  }
   el.scrollIntoView({
     behavior: prefersReducedMotion() ? "auto" : "smooth",
     block: "start",
@@ -1117,8 +1124,12 @@ export default function App() {
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
+    // Lenis scrolls the page itself, so an open menu has to stop it too.
+    if (menuOpen) window.__lenis?.stop();
+    else window.__lenis?.start();
     return () => {
       document.body.style.overflow = "";
+      window.__lenis?.start();
     };
   }, [menuOpen]);
 
@@ -1216,6 +1227,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-[#F4F0ED]">
+      <SmoothScroll />
       <div className="relative h-screen overflow-hidden">
         <CardSection visible={sectionVisible} imagesVisible={imagesVisible} />
 
