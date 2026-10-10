@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
+import { DevSessionImport } from "../../../components/account/DevSessionImport";
 import { Identicon } from "../../../components/account/Identicon";
 import { LogoutSheet } from "../../../components/account/LogoutSheet";
 import { ReceiveSheet } from "../../../components/account/ReceiveSheet";
@@ -214,6 +215,7 @@ export default function AccountPage() {
         <Button variant="glass" className="mt-4 text-neg!" onClick={() => setConfirming(true)}>
           Log out
         </Button>
+        <DevSessionImport />
       </div>
 
       <ReceiveSheet open={receiving} onClose={() => setReceiving(false)} address={address} />
