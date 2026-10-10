@@ -54,15 +54,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /**
- * The app's activity feed, not a chat: the card's payments on the left, the agent's refill on the
- * right (plan §3.6). There is no chat with the agent in the product, so none is shown here.
+ * Setting the agent up, in plain words: what you tell it once at onboarding (strategy and weekly
+ * budget, plan §3.1) and what it then does. Every reply is a real rule in apps/api: refill from the
+ * most overweight stock, and on a weekend sell only within 1% of Friday's close.
  */
 const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[] = [
-  { speaker: "you", text: "Paid $12 at a café." },
-  { speaker: "card", text: "You usually spend $80 a week. Card has $20." },
-  { speaker: "card", text: "Sold $60 of NVDA." },
-  { speaker: "card", text: "Sent $60 to your card." },
-  { speaker: "you", text: "Balance: $80.", emphasis: true },
+  { speaker: "you", text: "keep my card ready for the week" },
+  { speaker: "card", text: "on it. you spend about $80 a week." },
+  { speaker: "you", text: "and when it runs low?" },
+  { speaker: "card", text: "I sell a little NVDA. it grew past your target." },
+  { speaker: "you", text: "even on a saturday?" },
+  { speaker: "card", text: "only near Friday's price. otherwise I wait.", emphasis: true },
 ];
 
 /**
@@ -500,7 +502,7 @@ function ChatDemoSection() {
                       started ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    {isYou ? "Card" : "Agent"}
+                    {isYou ? "You:" : "Agent:"}
                   </span>
                 )}
                 {/*
