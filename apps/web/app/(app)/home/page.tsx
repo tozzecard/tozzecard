@@ -125,12 +125,15 @@ export default function HomePage() {
     <div className="mx-auto w-full max-w-[560px]">
       {data?.agent.linked ? (
         // Padding on the wrapper: the sliding highlight is positioned against the row itself.
-        <div className="mx-auto w-[240px] rounded-full bg-[#E9E9E9] p-1">
+        <div className="mx-auto w-[240px] rounded-full border border-line bg-white p-1">
           <SlidingTabs
             options={MODES}
             value={mode}
             onChange={switchTo}
             label="Card or agent wallet"
+            highlightClassName="bg-ink [box-shadow:0_6px_14px_-8px_rgba(0,0,0,.55)]"
+            activeClassName="text-white"
+            idleClassName="text-muted hover:text-ink"
           />
         </div>
       ) : null}
