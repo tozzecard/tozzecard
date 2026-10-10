@@ -151,7 +151,7 @@ export default function AccountPage() {
         <section className="mt-5">
           <div className="flex flex-col gap-2.5">
             <Panel
-              title="Add money"
+              title="Top up"
               body="Show your card's QR to receive USD1"
               onClick={() => setReceiving(true)}
               icon={

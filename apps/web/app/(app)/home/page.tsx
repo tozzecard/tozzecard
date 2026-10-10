@@ -115,7 +115,7 @@ export default function HomePage() {
             <ActionPill primary onClick={() => router.push("/pay")}>
               Pay
             </ActionPill>
-            <ActionPill onClick={() => setReceiving(true)}>Add money</ActionPill>
+            <ActionPill onClick={() => setReceiving(true)}>Top up</ActionPill>
           </ActionRow>
         ) : null}
 
