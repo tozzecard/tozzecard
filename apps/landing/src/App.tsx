@@ -617,9 +617,7 @@ function TopUpSection() {
           </Reveal>
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Your agent learns how much you spend and when, then tops up your card while the market
-              is open. It sells whatever has grown past your target, so one trade fills the card and
-              keeps your portfolio in shape.
+              It learns what you spend and sells what grew past your target.
             </p>
           </Reveal>
         </div>
@@ -668,18 +666,15 @@ function SpendSection() {
                 letterSpacing: "-0.03em",
               }}
             >
-              Tap and pay.
+              Scan.
               <br />
-              No gas, no seed phrase.
+              Pay.
             </h2>
           </Reveal>
 
-          {/* Wide enough that the sentence lands on two lines, never three. */}
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Your card is a wallet you own, unlocked with your face or fingerprint. It holds
-              dollars (USD1) and pays through Binance, which covers the network fee. You never need
-              BNB to buy a coffee.
+              Confirm with Face ID. Paid in dollars, no fees.
             </p>
           </Reveal>
         </div>
@@ -689,7 +684,7 @@ function SpendSection() {
       {/* biome-ignore lint/performance/noImgElement: static asset that must paint the moment the step appears; next/image defers it */}
       <img
         src="/buy-anything.avif"
-        alt="A phone held up to a contactless card reader"
+        alt="Paying with a phone"
         width={2424}
         height={1700}
         className="mt-12 w-full px-5 sm:px-10 md:absolute md:bottom-0 md:right-0 md:mt-0 md:w-[74%] md:px-0"
