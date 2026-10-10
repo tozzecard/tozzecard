@@ -713,14 +713,9 @@ function ReachSection() {
       </video>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <Reveal>
-          <p className="text-[12px] font-medium uppercase tracking-[0.5px] text-[#18161B]/45">
-            Stocks trade 24/7
-          </p>
-        </Reveal>
         <Reveal delay={0.08}>
           <h2
-            className="mt-4 font-light text-[#18161B]"
+            className="font-light text-[#18161B]"
             style={{
               fontSize: "clamp(1.9rem, 5.2vw, 3.75rem)",
               lineHeight: 1,
