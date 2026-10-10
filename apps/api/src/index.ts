@@ -166,15 +166,20 @@ app.post("/kyc/session", async (c) => {
 app.post("/kyc/didit", async (c) => {
   if (!didit) return c.json({ error: "identity check not configured" }, 503);
   const raw = await c.req.text();
-  if (!didit.verifyWebhook(raw, c.req.header("x-signature"), c.req.header("x-timestamp")))
+  if (!didit.verifyWebhook(raw, c.req.header("x-signature"), c.req.header("x-timestamp"))) {
+    console.warn("didit webhook: bad signature or stale timestamp");
     return c.json({ error: "bad signature" }, 401);
+  }
   const { session_id, status } = JSON.parse(raw) as { session_id?: string; status?: string };
   const address = session_id ? cards.bySession(session_id) : null;
   // An older session of this card, or one we never opened: nothing to do.
-  if (!address || !session_id || !status) return c.json({ ok: true });
-  if (status === "Approved") cards.approve(address, await didit.approvedDocument(session_id));
-  else cards.setKyc(address, kycOf(status));
-  return c.json({ ok: true, kyc: cards.get(address)?.kyc });
+  if (address && session_id && status) {
+    if (status === "Approved") cards.approve(address, await didit.approvedDocument(session_id));
+    else cards.setKyc(address, kycOf(status));
+  }
+  const kyc = address ? cards.get(address)?.kyc : undefined;
+  console.log(`didit webhook: ${session_id} ${status} → ${address ?? "unknown session"} ${kyc ?? ""}`);
+  return c.json({ ok: true, kyc });
 });
 
 // The card's statement: payments it made, refills the agent sent it. Newest first.
