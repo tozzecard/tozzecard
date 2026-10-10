@@ -32,6 +32,8 @@ export function Keypad({
   value,
   onChange,
   symbol,
+  suffix = "",
+  decimals = true,
   onQuick,
   invalid = false,
   hint,
@@ -39,6 +41,10 @@ export function Keypad({
   value: string;
   onChange: (next: string) => void;
   symbol: string;
+  /** Written after the figure, e.g. "%". */
+  suffix?: string;
+  /** False hides the "." key and ignores it from the keyboard: whole numbers only. */
+  decimals?: boolean;
   /** The 10% / 50% / Max row. Omit it where a share of something means nothing, such as a top-up. */
   onQuick?: (pct: number) => void;
   invalid?: boolean;
@@ -46,7 +52,7 @@ export function Keypad({
 }) {
   const press = (k: string) => {
     if (k === ".") {
-      if (!value.includes(".")) onChange(`${value}.`);
+      if (decimals && !value.includes(".")) onChange(`${value}.`);
       return;
     }
     onChange(value === "0" ? k : value + k);
@@ -120,6 +126,7 @@ export function Keypad({
               {display}
             </TextMorph>
           </span>
+          {suffix ? <span>{suffix}</span> : null}
           <span
             className={`ml-[3px] inline-block w-[2px] animate-pulse align-[-7px] ${
               display.length > 15 ? "h-[26px]" : display.length > 11 ? "h-[34px]" : "h-[50px]"
@@ -153,16 +160,20 @@ export function Keypad({
         </div>
       ) : null}
       <div className="mb-3.5 grid grid-cols-3 gap-0.5">
-        {KEYS.map((k) => (
-          <button
-            type="button"
-            key={k}
-            onClick={() => press(k)}
-            className="h-14 rounded-[14px] text-2xl font-medium text-ink active:bg-pill"
-          >
-            {k}
-          </button>
-        ))}
+        {KEYS.map((k) =>
+          k === "." && !decimals ? (
+            <span key={k} />
+          ) : (
+            <button
+              type="button"
+              key={k}
+              onClick={() => press(k)}
+              className="h-14 rounded-[14px] text-2xl font-medium text-ink active:bg-pill"
+            >
+              {k}
+            </button>
+          ),
+        )}
         <button
           type="button"
           aria-label="Backspace"
