@@ -4,7 +4,7 @@ import { useApi } from "../../hooks/useApi";
 import { useCard } from "../../hooks/useCard";
 import { ApiError, api } from "../../lib/api";
 import { StockLogo } from "../StockLogo";
-import { Button, Card } from "../ui";
+import { Button, Card, Spinner } from "../ui";
 import { NumberSheet } from "./NumberSheet";
 
 interface Strategy {
@@ -99,6 +99,7 @@ export function Targets() {
   const editingChoice = CHOICES.find((c) => c.symbol === editing);
 
   const save = async () => {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -227,18 +228,38 @@ export function Targets() {
 
       <div className="mt-5">
         {error ? <p className="mb-2 text-center text-[13px] text-neg">{error}</p> : null}
+        {/* Not disabled while saving: a disabled button fades to 40%, and a fade for the length of
+            one request reads as a glitch. A second tap is ignored in save() instead. */}
         <Button
           type="button"
           onClick={() => void save()}
-          disabled={busy || total !== 100 || !(Number(weekly) > 0)}
+          aria-busy={busy}
+          disabled={total !== 100 || !(Number(weekly) > 0)}
         >
-          {saved
-            ? "Saved"
-            : busy
-              ? "Saving…"
-              : total === 100
-                ? "Save"
-                : `Total ${total}%, needs 100%`}
+          {busy ? (
+            <Spinner size={18} />
+          ) : saved ? (
+            <>
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Saved
+            </>
+          ) : total === 100 ? (
+            "Save"
+          ) : (
+            `Total ${total}%, needs 100%`
+          )}
         </Button>
       </div>
       <NumberSheet
