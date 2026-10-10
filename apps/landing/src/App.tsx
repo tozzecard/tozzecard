@@ -80,11 +80,10 @@ const PILLARS: { title: string; blurb: string; src: string }[] = [
 ];
 
 /**
- * The Tozzecard mark: a card with a T cut out. The header follows its own text colour: the white
- * mark over the photographic hero, the dark one once the header turns dark.
+ * The team icon, copied from apps/web/public. It carries its own dark tile, so the same file works
+ * over the photographic hero and on the light header.
  */
-const LOGO_SRC = "/logo.svg";
-const LOGO_WHITE_SRC = "/logo-white.svg";
+const LOGO_SRC = "/tozzecard-icon.svg";
 
 const STAGGER_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -943,7 +942,7 @@ function Nav({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {/* biome-ignore lint/performance/noImgElement: static asset that must paint the moment the step appears; next/image defers it */}
           <img
-            src={d ? LOGO_SRC : LOGO_WHITE_SRC}
+            src={LOGO_SRC}
             alt=""
             width={24}
             height={24}

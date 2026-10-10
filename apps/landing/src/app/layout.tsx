@@ -5,12 +5,10 @@ import "../index.css";
 export const metadata: Metadata = {
   title: "Tozzecard",
   description: "Your stocks, ready to spend.",
-  // Transparent mark: dark on a light tab bar, white on a dark one, where the dark mark vanishes.
+  // The team icon (apps/web/public): its own dark tile, so one file reads on light and dark tab bars.
   icons: {
-    icon: [
-      { url: "/logo.svg", media: "(prefers-color-scheme: light)" },
-      { url: "/logo-white.svg", media: "(prefers-color-scheme: dark)" },
-    ],
+    icon: [{ url: "/tozzecard-icon.svg", type: "image/svg+xml" }],
+    apple: "/tozzecard-icon.png",
   },
 };
 
