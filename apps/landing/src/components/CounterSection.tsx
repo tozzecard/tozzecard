@@ -5,14 +5,15 @@ import { CurvedDivider } from "./CurvedDivider";
 // Served from public/, sized to the 1080px box it plays in.
 const GLOBE_VIDEO = "/counter.mp4";
 
+// Each figure is a setting in apps/api (refill.ts DEFAULTS, scheduler.ts DRIFT). Change them together.
 const STATS: { value: number; suffix: string; description: string }[] = [
-  { value: 1, suffix: "", description: "Second or less for money you send home to arrive" },
-  { value: 30, suffix: "", description: "Days to settle, the same every time, no interest" },
   {
-    value: 0,
-    suffix: "",
-    description: "Credit history you need to start. One identity check is enough",
+    value: 1,
+    suffix: "%",
+    description: "The most below Friday's close the agent will sell at on a weekend. Worse, it waits",
   },
+  { value: 0, suffix: "", description: "BNB your card needs to pay. Binance covers the fee" },
+  { value: 5, suffix: "%", description: "Drift from your target before the agent rebalances" },
 ];
 
 /** Ease-out cubic. Fast at the start, so the number feels like it lands. */
@@ -54,14 +55,14 @@ function AnimatedStat({ entry, active }: { entry: (typeof STATS)[number]; active
 
 export function CounterSection() {
   const { ref, isInView } = useInViewAnimation<HTMLElement>();
-  const headline = useCountUp(12400, isInView, 1400);
+  const headline = useCountUp(30, isInView, 1400);
 
   return (
     <section ref={ref} className="overflow-hidden pt-[130px] md:pt-[200px]">
       <div className="mx-auto flex max-w-[1260px] flex-col items-center gap-[60px] px-6 text-center">
         <div className="flex max-w-[500px] flex-col items-center gap-5">
           <span className="rounded-full border border-[#18161B]/10 bg-white px-4 py-2 text-[13px] text-[#18161B]/60">
-            Credit that grows with you
+            Sell before the bell
           </span>
 
           <h2
@@ -72,15 +73,15 @@ export function CounterSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            No history needed. Pay on time and your limit rises
+            The agent watches the New York clock, so you do not have to
           </h2>
 
           <span className="mt-2 text-[60px] font-light leading-none tracking-[-0.03em] text-[#18161B] md:text-[100px] lg:text-[120px]">
-            {headline.toLocaleString("en-US")}
-            <span className="text-[#18161B]/40">+</span>
+            {headline}
+            <span className="text-[#18161B]/40"> min</span>
           </span>
 
-          <p className="text-base text-[#18161B]/50 md:text-lg">Payments made without a sale</p>
+          <p className="text-base text-[#18161B]/50 md:text-lg">Before the close, when your card gets topped up</p>
         </div>
 
         {/* The cloud overlay the reference layers on top of this is a dead URL
