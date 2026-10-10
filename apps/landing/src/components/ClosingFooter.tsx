@@ -6,28 +6,23 @@ import { APP_URL } from "../app-url";
 const FAQS: { question: string; answer: string }[] = [
   {
     question: "Who holds my money?",
-    answer:
-      "You do. Your stocks sit in your own Binance agent wallet, and your dollars sit on a card that only your face or fingerprint unlocks. We never hold either, and there is no pool or vault of ours.",
+    answer: "You. Stocks in your Binance wallet, dollars on your card.",
   },
   {
-    question: "What stops the agent from sending my money somewhere else?",
-    answer:
-      "Binance does. The agent wallet can only send to addresses in its address book, and only you can edit that, in the Binance App. Put your card there and nothing else, and your card is the only place the money can go.",
+    question: "Can the agent send my money elsewhere?",
+    answer: "No. Only to your card. Only you can change that, in the Binance App.",
   },
   {
-    question: "What if I need money on a weekend and the card runs low?",
-    answer:
-      "The agent checks the price it would actually get. If it is within 1% of Friday's close, it sells the smallest amount it can. If not, it holds and tells you, rather than selling at a bad price.",
+    question: "What about weekends?",
+    answer: "It sells only within 1% of Friday's close. Otherwise it waits.",
   },
   {
-    question: "Why does the card hold USD1?",
-    answer:
-      "It is a dollar stablecoin that can be paid with a signature alone, so Binance can carry the payment and cover the fee. That is why your card never needs BNB.",
+    question: "Why USD1?",
+    answer: "It is a dollar. Binance pays the fee, so you never need BNB.",
   },
   {
-    question: "Which stocks can the agent hold?",
-    answer:
-      "Tokenized stocks from Ondo and bStocks on BNB Chain, such as NVDA, AAPL or MSFT. You pick the split, and the agent buys, sells and rebalances to keep it there.",
+    question: "Which stocks?",
+    answer: "Ondo and bStocks on BNB Chain, like NVDA, AAPL and MSFT.",
   },
 ];
 
