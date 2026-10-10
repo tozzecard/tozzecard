@@ -36,7 +36,9 @@ function toItems(rows: Activity[], now: number | null): ActivityItem[] {
 export default function HomePage() {
   const router = useRouter();
   const { session } = useCard();
-  const me = useApi<Me>("/me", 15_000);
+  // While Didit is checking, the card can issue any second: ask every few seconds (#51).
+  const [pending, setPending] = useState(false);
+  const me = useApi<Me>("/me", pending ? 4_000 : 15_000);
   const activity = useApi<Activity[]>("/me/activity");
   const [shown, setShown] = useState(false);
   const [receiving, setReceiving] = useState(false);
@@ -54,6 +56,7 @@ export default function HomePage() {
   const preview = items.slice(0, 5);
   const data = me.data;
   const active = isActive(data);
+  useEffect(() => setPending(data?.kyc === "pending"), [data?.kyc]);
   const card = data?.card;
   const address = data?.address ?? card?.address ?? session?.address ?? "";
 
