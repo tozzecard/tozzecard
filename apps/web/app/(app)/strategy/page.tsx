@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 import { AgentFeed } from "../../../components/strategy/AgentFeed";
-import { Holdings } from "../../../components/strategy/Holdings";
+import { Targets } from "../../../components/strategy/Targets";
 import { PageHeader } from "../../../components/ui";
 
 /**
- * Strategy tab: everything about the agent in one place. The market clock and what it holds
- * against your targets, the targets themselves (/targets), time travel, and its decision feed.
+ * Strategy tab: everything about the agent. The market clock, your targets (edit at /targets),
+ * time travel and its decision feed. What it holds is on Home, under Portfolio.
  */
 export default function StrategyPage() {
   return (
@@ -24,7 +24,7 @@ export default function StrategyPage() {
         }
       />
       <div className="flex flex-col gap-6">
-        <Holdings />
+        <Targets />
         <AgentFeed />
       </div>
     </div>

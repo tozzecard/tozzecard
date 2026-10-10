@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useApi } from "../../hooks/useApi";
-import type { Market, Portfolio } from "../../lib/api";
+import type { Market } from "../../lib/api";
 import { pct, until, usd } from "../../lib/format";
 import { StockLogo } from "../StockLogo";
 import { Card, Section, Skeleton } from "../ui";
@@ -53,97 +53,48 @@ function MarketClock() {
   );
 }
 
-function WeightBar({ weight, target }: { weight: number; target: number }) {
-  return (
-    <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-pill">
-      <div
-        className="absolute inset-y-0 left-0 rounded-full bg-ink"
-        style={{ width: `${Math.min(100, weight * 100)}%` }}
-      />
-      <div
-        className="absolute inset-y-[-3px] w-0.5 bg-neg"
-        style={{ left: `${Math.min(100, target * 100)}%` }}
-        title="Target"
-      />
-    </div>
-  );
-}
-
-/** What the agent holds against your targets, and the market clock (plan §3.4, §3.5). */
-export function Holdings() {
-  const portfolio = useApi<Portfolio>("/portfolio", 60_000);
+/** The market clock the agent trades by, and the split it keeps your stocks at (plan §3.4, §3.5). */
+export function Targets() {
   const strategy = useApi<Strategy>("/strategy", 120_000);
+  const tokens = strategy.data?.tokens ?? [];
 
   return (
-    <div>
-      <div className="mb-5">
-        <MarketClock />
-      </div>
+    <div className="flex flex-col gap-6">
+      <MarketClock />
 
-      {portfolio.data ? (
-        <>
-          <Card className="mb-5 px-5 py-5">
-            <div className="text-[13px] font-medium text-muted">Portfolio</div>
-            <div className="mt-1 text-[34px] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-              {usd(portfolio.data.totalUsd)}
-            </div>
-            <div className="mt-2 text-[13px] text-muted">
-              Card: {usd(portfolio.data.card.usd1)} USD1
-            </div>
-          </Card>
-          <Section title="Holdings">
-            <Card className="divide-y divide-line px-5">
-              {portfolio.data.holdings.map((h) => (
-                <div key={h.address} className="py-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <StockLogo ticker={h.market?.ticker ?? h.symbol} />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[15px] font-semibold">
-                        {h.market?.ticker ?? h.symbol}
-                      </span>
-                      <span className="ml-2 text-[12px] text-muted">{h.symbol}</span>
-                    </div>
-                    <span className="text-[15px] font-semibold tabular-nums">
-                      {usd(h.valueUsd)}
-                    </span>
-                  </div>
-                  <WeightBar weight={h.weight} target={h.target} />
-                  <div className="mt-1.5 flex justify-between text-[12px] text-muted">
-                    <span>{pct(h.weight)} of portfolio</span>
-                    <span>target {pct(h.target)}</span>
-                  </div>
-                </div>
-              ))}
-            </Card>
-          </Section>
-        </>
-      ) : portfolio.loading ? (
-        <Skeleton className="h-40 w-full rounded-[20px]" />
-      ) : (
-        <>
-          <Card className="mb-5 px-5 py-4">
-            <div className="text-[14px] font-semibold">Your agent isn&apos;t running yet</div>
+      <Section title="Your targets">
+        {strategy.loading && !strategy.data ? (
+          <Skeleton className="h-24 w-full rounded-[20px]" />
+        ) : tokens.length === 0 ? (
+          <Card className="px-5 py-4">
+            <div className="text-[14px] font-semibold">No targets yet</div>
             <p className="mt-1 text-[13px] text-muted">
-              Holdings appear here once the agent is connected to your Agentic Wallet.
+              Pick the split your agent keeps your stocks at. It sells what grows past it to top up
+              your card.
             </p>
           </Card>
-          {strategy.data && strategy.data.tokens.length > 0 ? (
-            <Section title="Your targets">
-              <Card className="divide-y divide-line px-5">
-                {strategy.data.tokens.map((t) => (
-                  <div key={t.address} className="flex justify-between py-3.5 text-[14px]">
-                    <span className="font-semibold">{t.symbol ?? `${t.address.slice(0, 8)}…`}</span>
-                    <span className="tabular-nums text-muted">{pct(t.weight, 0)}</span>
+        ) : (
+          <>
+            <Card className="divide-y divide-line px-4">
+              {tokens.map((t) => {
+                const symbol = t.symbol ?? `${t.address.slice(0, 8)}…`;
+                return (
+                  <div key={t.address} className="flex items-center gap-3 py-3">
+                    <StockLogo ticker={symbol.replace(/(on|B)$/, "")} size={32} />
+                    <span className="min-w-0 flex-1 text-[14px] font-semibold">{symbol}</span>
+                    <span className="text-[14px] font-semibold tabular-nums">
+                      {pct(t.weight, 0)}
+                    </span>
                   </div>
-                ))}
-              </Card>
-              <p className="mx-1 mt-2 text-[12px] text-muted">
-                Weekly spending estimate: {usd(strategy.data.weeklyEstimateUsd)}
-              </p>
-            </Section>
-          ) : null}
-        </>
-      )}
+                );
+              })}
+            </Card>
+            <p className="mx-1 mt-2 text-[12px] text-muted">
+              Weekly spending estimate: {usd(strategy.data?.weeklyEstimateUsd ?? 0)}
+            </p>
+          </>
+        )}
+      </Section>
     </div>
   );
 }
