@@ -25,12 +25,12 @@ function nextNy(weekday: number, hour: number, minute: number): string {
 }
 
 const PRESETS = [
-  { label: "Friday 3:30 pm NY", at: () => nextNy(5, 15, 30) },
-  { label: "Saturday noon NY", at: () => nextNy(6, 12, 0) },
+  { label: "Fri 3:30pm", at: () => nextNy(5, 15, 30) },
+  { label: "Sat noon", at: () => nextNy(6, 12, 0) },
   { label: "Now", at: () => new Date().toISOString() },
 ];
 
-const VERB = { refill: "Would top up your card", hold: "Would wait", none: "Nothing to do" };
+const VERB = { refill: "Tops up your card", hold: "Waits", none: "Does nothing" };
 
 /**
  * Demo time travel (plan §8 step 4): what the agent would decide at a chosen time, from
@@ -52,9 +52,9 @@ export function PreviewCard() {
       setResult(null);
       setError(
         e instanceof ApiError && e.status === 404
-          ? "Time travel needs the agent running."
+          ? "Needs the agent running."
           : e instanceof ApiError && (e.code === "SESSION_EXPIRED" || e.code === "NOT_LOGGED_IN")
-            ? "The Agentic Wallet needs a sign-in in the Binance App."
+            ? "Agent needs a sign-in in the Binance App."
             : e instanceof Error
               ? e.message
               : "Could not ask the agent.",
@@ -66,8 +66,8 @@ export function PreviewCard() {
 
   return (
     <Card className="px-5 py-4">
-      <div className="text-[14px] font-semibold">What would the agent do at…</div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="text-[14px] font-semibold">What the agent does at… (New York time)</div>
+      <div className="mt-3 flex gap-2">
         {PRESETS.map((p) => (
           <Button
             key={p.label}
@@ -89,7 +89,7 @@ export function PreviewCard() {
             {result.decision.usd ? ` · ${usd(result.decision.usd)}` : ""}
           </div>
           <p className="mt-1 text-[13px] text-ink-2">{result.decision.reason}</p>
-          <p className="mt-1 text-[11px] text-muted">Preview only. Nothing was traded.</p>
+          <p className="mt-1 text-[11px] text-muted">Preview. Nothing traded.</p>
         </div>
       ) : null}
       {error ? <p className="mt-3 text-[13px] text-muted">{error}</p> : null}
