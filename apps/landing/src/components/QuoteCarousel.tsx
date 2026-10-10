@@ -19,15 +19,16 @@ const QUOTES: {
   avatar: string;
 }[] = [
   {
-    quote: "I sent money home and it arrived before I hung up. My limit went up the month after.",
-    author: "Alice Sugar",
+    quote:
+      "Friday afternoon my card went from 20 to 90 dollars. I had not asked. Saturday I spent 70.",
+    author: "Jane Major",
     role: "Product Designer",
     company: "Acme",
     avatar: `${PEXELS}/774909/pexels-photo-774909.jpeg${CROP}`,
   },
   {
     quote:
-      "The limit started small and it annoyed me. Three months later it is bigger than what I put in. I get it now.",
+      "I used to sell a bit of stock on Sunday night to cover the week. I do not even think about it now.",
     author: "John Doe",
     role: "Engineer",
     company: "Northwind",
@@ -35,7 +36,7 @@ const QUOTES: {
   },
   {
     quote:
-      "One check when I signed up. Nobody has asked me for a document since, and I have used it every week.",
+      "I tried to make the agent send money to a friend. Binance said no. That is exactly what I wanted.",
     author: "Jane Roe",
     role: "Operations",
     company: "Contoso",
@@ -43,7 +44,7 @@ const QUOTES: {
   },
   {
     quote:
-      "Thirty days, no interest, and the amount I owe is the amount I owed. That is the whole deal and I like that.",
+      "Every sale comes with a reason I can read. I check the feed more than I check the price.",
     author: "Richard Roe",
     role: "Analyst",
     company: "Initech",
