@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
 import { PreviewCard } from "../../../components/agent/PreviewCard";
 import { AgentFeed } from "../../../components/strategy/AgentFeed";
@@ -21,17 +20,7 @@ export default function StrategyPage() {
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
-      <PageHeader
-        title="Strategy"
-        action={
-          <Link
-            href="/targets"
-            className="inline-flex h-10 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink-2"
-          >
-            Set targets
-          </Link>
-        }
-      />
+      <PageHeader title="Strategy" />
       <StatusPills />
       {/* The padding lives on this wrapper: the sliding highlight is positioned against the row
           itself, so padding on the row would push the buttons off the highlight. */}

@@ -46,9 +46,12 @@ export function Targets() {
           );
         })}
       </Card>
-      <p className="mx-1 mt-2 text-[12px] text-muted">
-        About {usd(data?.weeklyEstimateUsd ?? 0)} spent a week
-      </p>
+      <div className="mx-1 mt-2 flex items-center justify-between text-[12px] text-muted">
+        <span>About {usd(data?.weeklyEstimateUsd ?? 0)} spent a week</span>
+        <Link href="/targets" className="font-semibold text-ink">
+          Edit
+        </Link>
+      </div>
     </>
   );
 }
