@@ -12,7 +12,7 @@ import { ActionPill, ActionRow, Card, Skeleton, Toast } from "../../../component
 import { useApi } from "../../../hooks/useApi";
 import { useCard } from "../../../hooks/useCard";
 import type { ActivityItem } from "../../../lib/activity";
-import { type Activity, api, bscscanTx, type Me } from "../../../lib/api";
+import { type Activity, ApiError, api, bscscanTx, type Me } from "../../../lib/api";
 import { isActive } from "../../../lib/card";
 import { ago, signedUsd } from "../../../lib/format";
 
@@ -55,6 +55,7 @@ export default function HomePage() {
   const data = me.data;
   const active = isActive(data);
   const card = data?.card;
+  const address = data?.address ?? card?.address ?? session?.address ?? "";
 
   /** Activate: Didit when the API has it (issue #50), otherwise the agent-link steps. */
   const activate = async () => {
@@ -65,10 +66,19 @@ export default function HomePage() {
       const { url } = await api<{ url: string }>("/kyc/session", {
         method: "POST",
         token: session?.token,
+        body: { returnUrl: `${window.location.origin}/home` },
       });
       window.location.assign(url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not start verification.");
+      if (e instanceof ApiError && e.status === 409) void me.reload();
+      else
+        setError(
+          e instanceof ApiError && e.status === 503
+            ? "Identity checks aren't switched on yet. Try again soon."
+            : e instanceof Error
+              ? e.message
+              : "Could not start verification.",
+        );
       setStarting(false);
     }
   };
@@ -135,11 +145,7 @@ export default function HomePage() {
         </Card>
       </div>
 
-      <ReceiveSheet
-        open={receiving}
-        onClose={() => setReceiving(false)}
-        address={card?.address ?? ""}
-      />
+      <ReceiveSheet open={receiving} onClose={() => setReceiving(false)} address={address} />
       <Toast open={Boolean(error ?? me.error)} message={error ?? me.error ?? ""} />
     </div>
   );
