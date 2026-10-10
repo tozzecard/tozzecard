@@ -64,9 +64,11 @@ bun dev                # web on :3000, api on :8787
 | `GET /docs`, `GET /openapi.json` | Swagger UI and the OpenAPI 3.1 spec: https://api.tozzecard.xyz/docs |
 | `GET /market`, `GET /market/:symbol` | Status, on-chain price, close reference, spread (`SPYon` for the market clock) |
 | `POST /auth/challenge` `{address}` | One-time message for the card key to sign |
-| `POST /auth/verify` `{message, signature, holder?}` | Bearer token; the first sign-in issues the card (201) |
+| `POST /auth/verify` `{message, signature}` | Bearer token, plus `kyc` and `card` (null until the identity check passes) |
 | `POST /auth/signout` | Ends the session |
-| `GET /me`, `PATCH /me` `{holder}` | Card face (number, expiry, CVV, holder), USD1/BNB balance, whether the agent refills it |
+| `GET /me` | `kyc` state, card face (number, expiry, CVV, holder from the document; null until approved), USD1/BNB balance, whether the agent refills it |
+| `POST /kyc/session` `{returnUrl?}` | Starts the Didit identity check → `{url}` to open |
+| `POST /kyc/didit` | Didit webhook (signed); on approval issues the card |
 | `GET /me/activity` | Card statement: B402 payments and agent refills, newest first |
 | `GET /strategy`, `PUT /strategy` `{targets, weeklyEstimateUsd}` | Agent target weights (symbol or address → weight, sum 1). Only the agent's card may change it |
 | `GET /portfolio` | Agent wallet holdings with weight vs target and market data, plus the card's USD1 |

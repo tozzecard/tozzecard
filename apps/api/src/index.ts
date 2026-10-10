@@ -7,7 +7,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createPublicClient, erc20Abi, formatEther, formatUnits, getAddress, http } from "viem";
 import { bsc } from "viem/chains";
-import { cleanHolder, createCards } from "./card";
+import { createCards } from "./card";
+import { createDidit, kycOf } from "./kyc";
 import { createMarket } from "./market";
 import { createMerchant, PAYMENT_HEADER, RECEIPT_HEADER, USD1 } from "./merchant";
 import { docsHtml, openapi } from "./openapi";
@@ -19,7 +20,17 @@ const POLL_MS = Number(process.env.MARKET_POLL_MS ?? 60_000);
 const client = clientFromEnv();
 const db = new Database(process.env.DB_PATH ?? "tozzecard.sqlite");
 const market = createMarket(client, db);
-const cards = createCards(db);
+const cards = createCards(db, process.env.CARD_SECRET ?? "");
+// Identity check (kyc.ts). Without Didit keys /kyc/* answer 503 and no card is issued.
+const didit =
+  process.env.DIDIT_API_KEY && process.env.DIDIT_WORKFLOW_ID && process.env.DIDIT_WEBHOOK_SECRET
+    ? createDidit({
+        apiKey: process.env.DIDIT_API_KEY,
+        workflowId: process.env.DIDIT_WORKFLOW_ID,
+        webhookSecret: process.env.DIDIT_WEBHOOK_SECRET,
+      })
+    : null;
+if (!didit) console.warn("DIDIT_* not set: identity check off, no card can be issued");
 const strategies = createStrategyStore(db);
 const rpc = createPublicClient({ chain: bsc, transport: http(process.env.BSC_RPC_URL) });
 
@@ -55,12 +66,13 @@ tick();
 setInterval(tick, POLL_MS);
 
 const app = new Hono();
+const webOrigins = (process.env.WEB_ORIGIN ?? "http://localhost:3000").split(",");
 
 // The web app (apps/web) calls us from the browser. PAYMENT-RESPONSE carries the B402 receipt.
 app.use(
   "*",
   cors({
-    origin: (process.env.WEB_ORIGIN ?? "http://localhost:3000").split(","),
+    origin: webOrigins,
     exposeHeaders: [RECEIPT_HEADER],
   }),
 );
@@ -85,8 +97,8 @@ app.get("/market/:symbol", (c) => {
   return view ? c.json(view) : c.json({ error: "unknown symbol" }, 404);
 });
 
-// Card sign-in (card.ts): challenge → the card key signs it → bearer token. First sign-in issues
-// the card. Everything under /me needs `Authorization: Bearer <token>`.
+// Card sign-in (card.ts): challenge → the card key signs it → bearer token. The card is issued
+// after the identity check (/kyc/*). Everything under /me needs `Authorization: Bearer <token>`.
 app.post("/auth/challenge", async (c) => {
   const { address } = await c.req.json<{ address?: string }>().catch(() => ({ address: "" }));
   try {
@@ -98,14 +110,12 @@ app.post("/auth/challenge", async (c) => {
 
 app.post("/auth/verify", async (c) => {
   const body = await c.req
-    .json<{ message?: string; signature?: string; holder?: string }>()
+    .json<{ message?: string; signature?: string }>()
     .catch(() => ({}) as Record<string, undefined>);
   if (!body.message || !body.signature)
     return c.json({ error: "message and signature are required" }, 400);
-  const r = await cards.signIn(body.message, body.signature, cleanHolder(body.holder));
-  return r
-    ? c.json(r, r.created ? 201 : 200)
-    : c.json({ error: "invalid or expired signature" }, 401);
+  const r = await cards.signIn(body.message, body.signature);
+  return r ? c.json(r) : c.json({ error: "invalid or expired signature" }, 401);
 });
 
 app.post("/auth/signout", (c) => {
@@ -128,29 +138,50 @@ const me = (c: { req: { header: (n: string) => string | undefined } }) =>
 const unauthorized = { error: "sign in first", code: "UNAUTHORIZED" };
 
 app.get("/me", async (c) => {
-  const card = me(c);
-  if (!card) return c.json(unauthorized, 401);
+  const acct = me(c);
+  if (!acct) return c.json(unauthorized, 401);
   return c.json({
-    card,
-    balance: await balances(card.address),
-    agent: { linked: card.address === agentCard, mode: agentMode },
+    ...acct,
+    balance: await balances(acct.address),
+    agent: { linked: acct.address === agentCard, mode: agentMode },
   });
 });
 
-app.patch("/me", async (c) => {
-  const card = me(c);
-  if (!card) return c.json(unauthorized, 401);
-  const { holder } = await c.req.json<{ holder?: string }>().catch(() => ({ holder: "" }));
-  const name = cleanHolder(holder);
-  if (!name) return c.json({ error: "holder: letters, spaces, . ' - up to 26 characters" }, 400);
-  return c.json({ card: cards.rename(card.address, name) });
+// Identity check: a Didit session for the signed-in card → { url } to open. Didit sends the user
+// back to `returnUrl` (an origin in WEB_ORIGIN) and calls /kyc/didit with the result.
+app.post("/kyc/session", async (c) => {
+  const acct = me(c);
+  if (!acct) return c.json(unauthorized, 401);
+  if (!didit) return c.json({ error: "identity check not configured" }, 503);
+  if (acct.kyc === "approved") return c.json({ error: "card already issued" }, 409);
+  const { returnUrl } = await c.req.json<{ returnUrl?: string }>().catch(() => ({ returnUrl: "" }));
+  const origin = URL.canParse(returnUrl ?? "") ? new URL(String(returnUrl)).origin : "";
+  const callback = webOrigins.includes(origin) ? String(returnUrl) : "https://app.tozzecard.xyz/";
+  const s = await didit.createSession(acct.address, callback);
+  cards.kycStarted(acct.address, s.sessionId);
+  return c.json({ url: s.url });
+});
+
+// Didit webhook: signature over the raw body first; the document comes from the decision API.
+app.post("/kyc/didit", async (c) => {
+  if (!didit) return c.json({ error: "identity check not configured" }, 503);
+  const raw = await c.req.text();
+  if (!didit.verifyWebhook(raw, c.req.header("x-signature"), c.req.header("x-timestamp")))
+    return c.json({ error: "bad signature" }, 401);
+  const { session_id, status } = JSON.parse(raw) as { session_id?: string; status?: string };
+  const address = session_id ? cards.bySession(session_id) : null;
+  // An older session of this card, or one we never opened: nothing to do.
+  if (!address || !session_id || !status) return c.json({ ok: true });
+  if (status === "Approved") cards.approve(address, await didit.approvedDocument(session_id));
+  else cards.setKyc(address, kycOf(status));
+  return c.json({ ok: true, kyc: cards.get(address)?.kyc });
 });
 
 // The card's statement: payments it made, refills the agent sent it. Newest first.
 app.get("/me/activity", (c) => {
-  const card = me(c);
-  if (!card) return c.json(unauthorized, 401);
-  const payments = (merchant?.paidBy(card.address) ?? []).map((o) => ({
+  const acct = me(c);
+  if (!acct) return c.json(unauthorized, 401);
+  const payments = (merchant?.paidBy(acct.address) ?? []).map((o) => ({
     type: "payment" as const,
     at: o.createdAt,
     usd: -Number(merchant?.formatAmount(o)),
@@ -158,7 +189,7 @@ app.get("/me/activity", (c) => {
     tx: o.tx,
   }));
   const refills =
-    card.address === agentCard && scheduler
+    acct.address === agentCard && scheduler
       ? scheduler
           .log(500)
           .filter((e) => e.action === "refill" && e.status === "executed")
@@ -199,9 +230,9 @@ app.get("/strategy", (c) =>
 );
 
 app.put("/strategy", async (c) => {
-  const card = me(c);
-  if (!card) return c.json(unauthorized, 401);
-  if (card.address !== agentCard)
+  const acct = me(c);
+  if (!acct) return c.json(unauthorized, 401);
+  if (acct.address !== agentCard)
     return c.json({ error: "only the card this agent refills can change its strategy" }, 403);
   const parsed = parseStrategy(await c.req.json().catch(() => null), (k) => {
     const m = market.all().find((x) => x.symbol === k || x.address === k.toLowerCase());
@@ -267,7 +298,7 @@ if (mode === "dry" || mode === "live") {
     },
     tzOffsetMinutes: Number(env.TZ_OFFSET_MIN ?? 420),
     cardCreatedAt:
-      Date.parse(env.CARD_CREATED_AT ?? "") || cards.get(agentCard)?.createdAt || Date.now(),
+      Date.parse(env.CARD_CREATED_AT ?? "") || cards.get(agentCard)?.card?.createdAt || Date.now(),
   };
   const cardBalanceUsd = async () => (await balances(agentCard)).usd1;
   const s = createScheduler({
