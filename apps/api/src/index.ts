@@ -178,7 +178,9 @@ app.post("/kyc/didit", async (c) => {
     else cards.setKyc(address, kycOf(status));
   }
   const kyc = address ? cards.get(address)?.kyc : undefined;
-  console.log(`didit webhook: ${session_id} ${status} → ${address ?? "unknown session"} ${kyc ?? ""}`);
+  console.log(
+    `didit webhook: ${session_id} ${status} → ${address ?? "unknown session"} ${kyc ?? ""}`,
+  );
   return c.json({ ok: true, kyc });
 });
 
