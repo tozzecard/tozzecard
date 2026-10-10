@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import QRCode from "react-qr-code";
 import { BottomSheet, Button, Card, CopyButton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
+import { useCard } from "../../../hooks/useCard";
 import type { AgentSession, Me } from "../../../lib/api";
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
@@ -72,7 +73,8 @@ export default function ActivatePage() {
   const me = useApi<Me>("/me", 8_000);
   const session = useApi<AgentSession>("/agent/session", 15_000);
   const [qr, setQr] = useState(false);
-  const address = me.data?.card?.address ?? "";
+  const { session: card } = useCard();
+  const address = me.data?.address ?? me.data?.card?.address ?? card?.address ?? "";
   const connected = Boolean(session.data?.connected && !session.data.devMode);
   const linked = Boolean(me.data?.agent.linked);
 
