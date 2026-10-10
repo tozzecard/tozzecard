@@ -39,7 +39,7 @@ const FOOTER_LINKS: { heading: string; items: { label: string; href: string }[] 
     heading: "Company",
     items: [
       { label: "GitHub", href: "https://github.com/tozzecard/tozzecard" },
-      { label: "Docs", href: "https://github.com/tozzecard/tozzecard#readme" },
+      { label: "Docs", href: "https://docs.tozzecard.xyz" },
       { label: "BNB Chain", href: "https://www.bnbchain.org" },
     ],
   },
