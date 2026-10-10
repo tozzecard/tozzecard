@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { type FormEvent, type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Button, Toast } from "../components/ui";
 import { useApi } from "../hooks/useApi";
 import { useCard } from "../hooks/useCard";
@@ -36,14 +36,6 @@ const TOUR: TourScreen[] = [
     visual: <CardVisual />,
   },
 ];
-
-/** The API accepts A–Z, space, . ' - and up to 26 characters (apps/api card.ts cleanHolder). */
-const cleanHolder = (s: string) =>
-  s
-    .toUpperCase()
-    .replace(/[^A-Z .'-]/g, "")
-    .replace(/\s+/g, " ")
-    .slice(0, 26);
 
 export default function Onboarding() {
   const router = useRouter();
@@ -120,12 +112,13 @@ export default function Onboarding() {
   );
 }
 
-/** The last screen: make a card with a passkey, or sign back in with one. */
+/**
+ * The last screen: make a card with a passkey, or sign back in with one. No name here: the card is
+ * activated on Home, and its name comes from there.
+ */
 function CreateScreen({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const { create, signIn } = useCard();
-  const [naming, setNaming] = useState(false);
-  const [holder, setHolder] = useState("");
   const [busy, setBusy] = useState<"create" | "signin" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -148,17 +141,11 @@ function CreateScreen({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (holder.trim().length < 2) return setError("Type the name for your card.");
-    void run("create", () => create(holder.trim()));
-  };
-
   return (
     <main className={`${styles.screen} ${styles.tourScreen} ${styles.connectScreen}`}>
       <div className={styles.onboardingPanel}>
         <header className={styles.tourHeader}>
-          <BackButton onClick={naming ? () => setNaming(false) : onBack} />
+          <BackButton onClick={onBack} />
           <BrandMark compact />
           <span aria-hidden="true" className={styles.headerSpacer} />
         </header>
@@ -174,48 +161,24 @@ function CreateScreen({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <div className={styles.tourCopy}>
-            <h1>{naming ? "Name your card" : "Create your card"}</h1>
-            <p>
-              {naming
-                ? "It goes on the card face. You can change it later."
-                : "Face ID only. No seed phrase, no wallet to install."}
-            </p>
+            <h1>Create your card</h1>
+            <p>Face ID only. No seed phrase, no wallet to install.</p>
             <Stepper current={TOUR.length} total={TOUR.length + 1} />
           </div>
         </section>
 
         <div className={styles.ctaStack}>
-          {naming ? (
-            <form onSubmit={submit}>
-              <input
-                aria-label="Name on the card"
-                value={holder}
-                onChange={(e) => setHolder(cleanHolder(e.target.value))}
-                placeholder="ALEX LEE"
-                autoComplete="name"
-                // biome-ignore lint/a11y/noAutofocus: the only field on this step
-                autoFocus
-                className={styles.nameField}
-              />
-              <Button type="submit" disabled={busy !== null}>
-                {busy === "create" ? "Waiting for Face ID…" : "Continue with Face ID"}
-              </Button>
-            </form>
-          ) : (
-            <>
-              <Button onClick={() => setNaming(true)} disabled={busy !== null}>
-                Create your card
-              </Button>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={() => void run("signin", signIn)}
-                disabled={busy !== null}
-              >
-                {busy === "signin" ? "Waiting for Face ID…" : "I already have a card"}
-              </button>
-            </>
-          )}
+          <Button onClick={() => void run("create", () => create(""))} disabled={busy !== null}>
+            {busy === "create" ? "Waiting for Face ID…" : "Create your card"}
+          </Button>
+          <button
+            type="button"
+            className={styles.secondaryAction}
+            onClick={() => void run("signin", signIn)}
+            disabled={busy !== null}
+          >
+            {busy === "signin" ? "Waiting for Face ID…" : "I already have a card"}
+          </button>
         </div>
         <Toast open={!!error} message={error ?? ""} />
       </div>
