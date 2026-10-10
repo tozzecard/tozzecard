@@ -7,7 +7,7 @@ import { BottomNav, DesktopNav, SHELL, TopBlur } from "../../components/ui";
 import { useIsDesktop } from "../../hooks/useIsDesktop";
 import { useNav } from "../../hooks/useNav";
 
-const SHELL_ROUTES = ["/home", "/portfolio", "/agent"] as const;
+const SHELL_ROUTES = ["/home", "/strategy", "/account"] as const;
 type ShellRoute = (typeof SHELL_ROUTES)[number];
 type SwipeStart = { x: number; y: number };
 

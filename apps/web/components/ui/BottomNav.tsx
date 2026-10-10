@@ -4,19 +4,10 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const TABS = [
+  { href: "/home", label: "Home", icon: <path d="M4 11l8-7 8 7M6 10v9h12v-9" /> },
   {
-    href: "/home",
-    label: "Card",
-    icon: (
-      <>
-        <rect x="3" y="6" width="18" height="12" rx="2.5" />
-        <path d="M3 10h18" />
-      </>
-    ),
-  },
-  {
-    href: "/portfolio",
-    label: "Stocks",
+    href: "/strategy",
+    label: "Strategy",
     icon: (
       <>
         <rect x="4" y="13" width="4" height="7" rx="1.5" fill="currentColor" stroke="none" />
@@ -26,12 +17,12 @@ const TABS = [
     ),
   },
   {
-    href: "/agent",
-    label: "Agent",
+    href: "/account",
+    label: "Account",
     icon: (
       <>
-        <rect x="5" y="8" width="14" height="11" rx="3" />
-        <path d="M12 4v4M9.5 13h.01M14.5 13h.01" />
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20a8 8 0 0 1 16 0" />
       </>
     ),
   },

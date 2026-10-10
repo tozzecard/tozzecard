@@ -88,7 +88,7 @@ export function AccountMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              nav.forward("/settings");
+              nav.forward("/account");
             }}
             className="flex w-full items-center gap-[13px] rounded-xl px-3 py-2.5 text-left hover:bg-pill"
           >

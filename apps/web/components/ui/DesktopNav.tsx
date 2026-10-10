@@ -29,9 +29,9 @@ import { SHELL } from "./shell";
  */
 
 const LINKS = [
-  { href: "/home", label: "Card" },
-  { href: "/portfolio", label: "Stocks" },
-  { href: "/agent", label: "Agent" },
+  { href: "/home", label: "Home" },
+  { href: "/strategy", label: "Strategy" },
+  { href: "/account", label: "Account" },
 ] as const;
 
 function Item({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
