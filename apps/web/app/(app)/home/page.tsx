@@ -1,10 +1,14 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { LogoutSheet } from "../../../components/account/LogoutSheet";
+import { ReceiveSheet } from "../../../components/account/ReceiveSheet";
 import { ActivityList } from "../../../components/activity/ActivityList";
 import { CardArtwork } from "../../../components/card/CardArtwork";
 import { CardFolder } from "../../../components/motion/card-folder";
-import { Card, Section, Skeleton } from "../../../components/ui";
+import { ActionPill, ActionRow, Card, Section, Skeleton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
+import { useCard } from "../../../hooks/useCard";
 import type { ActivityItem } from "../../../lib/activity";
 import { type Activity, bscscanTx, type Me } from "../../../lib/api";
 import { ago, signedUsd, usd } from "../../../lib/format";
@@ -29,7 +33,10 @@ function toItems(rows: Activity[], now: number | null): ActivityItem[] {
 export default function HomePage() {
   const me = useApi<Me>("/me");
   const activity = useApi<Activity[]>("/me/activity");
+  const router = useRouter();
+  const { signOut } = useCard();
   const [shown, setShown] = useState(false);
+  const [sheet, setSheet] = useState<"receive" | "logout" | null>(null);
   // The clock is read after mount: a relative time baked into server HTML breaks hydration.
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -74,6 +81,17 @@ export default function HomePage() {
           {me.data ? usd(me.data.balance.usd1) : <Skeleton className="h-10 w-40" />}
         </div>
         <div className="mt-2 text-[13px] text-muted">USD1 on BNB Chain · no BNB needed to pay</div>
+        <ActionRow className="mt-4">
+          <ActionPill primary onClick={() => router.push("/pay")}>
+            Pay
+          </ActionPill>
+          <ActionPill onClick={() => setSheet("receive")} disabled={!card}>
+            Add money
+          </ActionPill>
+          <ActionPill onClick={() => setSheet("logout")} className="lg:hidden">
+            Sign out
+          </ActionPill>
+        </ActionRow>
       </Card>
 
       {me.data && !me.data.agent.linked ? (
@@ -113,6 +131,20 @@ export default function HomePage() {
           emptyDescription="Payments and the agent's top-ups show up here."
         />
       </Section>
+
+      <ReceiveSheet
+        open={sheet === "receive"}
+        onClose={() => setSheet(null)}
+        address={card?.address ?? ""}
+      />
+      <LogoutSheet
+        open={sheet === "logout"}
+        onClose={() => setSheet(null)}
+        onConfirm={() => {
+          setSheet(null);
+          void signOut().then(() => router.replace("/"));
+        }}
+      />
     </div>
   );
 }
