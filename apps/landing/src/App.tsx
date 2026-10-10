@@ -340,9 +340,9 @@ function HeroSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            Your Limit Is Earned
+            Your Stocks Never Sell
             <br />
-            Not Deposited
+            At Weekend Prices
           </h1>
         </div>
 
@@ -351,9 +351,9 @@ function HeroSection() {
           style={{ animationDelay: "0.85s" }}
         >
           <p className="max-w-md text-[15px] leading-relaxed text-white/75 sm:text-base">
-            Most cards hand back exactly what you put in. This one does not. Verify who you are,
-            lock what you already hold, and start at two thirds of it. Settle on time and that
-            flips: a clean record is allowed more than it holds.
+            An agent holds your tokenized stocks and keeps your card topped up in dollars. It sells
+            while the New York market is open, before you need the money, so paying for dinner on a
+            Saturday never means selling into a closed market.
           </p>
         </div>
       </div>
@@ -408,23 +408,23 @@ function CardSection({ visible, imagesVisible }: { visible: boolean; imagesVisib
           className={staggerClass("font-light text-[#18161B]")}
           style={{ ...h2Style, animationDelay: "0.15s" }}
         >
-          It Spends Once
+          Friday, 4pm
         </h2>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-8 px-5 pb-10 sm:px-10 sm:pb-14 md:flex-row md:items-end md:justify-between md:px-14 md:pb-16">
         <div className={staggerClass("max-w-md")} style={{ animationDelay: "0.7s" }}>
           <p className="text-[15px] leading-relaxed text-[#18161B]/75 sm:text-base">
-            What you put in never moves. It sits in your account on Monad, earning while it waits,
-            and only what you owe can ever be taken from it. Pay, settle up, take it back whenever
-            you want.
+            New York stops trading until Monday. Your tokenized stocks do not, and the price you get
+            for them has no market behind it. Your agent sells before the bell, so the card already
+            holds what your weekend costs.
           </p>
         </div>
         <h2
           className={staggerClass("font-light text-[#18161B] md:text-right")}
           style={{ ...h2Style, animationDelay: "0.5s" }}
         >
-          Then It’s Gone
+          The Market Closes
         </h2>
       </div>
     </section>
