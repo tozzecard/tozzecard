@@ -11,7 +11,7 @@ and refills a passkey card wallet in USD1 while the US market is open; the card 
 real money, `baw` 1.10.0, Binance Web3 API (RWA Data, Trading, B402). 28 Sep – 11 Oct 2026, team of three,
 working from Indonesia; API server in Kuala Lumpur.
 
-Totals from our log: **52 notes, ~415 minutes lost**: AI stack 175, tokenized-stock data 105, docs 65,
+Totals from our log: **58 notes, ~415 minutes lost**: AI stack 175, tokenized-stock data 105, docs 65,
 API 50, onboarding 20.
 
 ---
@@ -111,6 +111,15 @@ AI agent. Every wallet action is our own code calling `baw` (`packages/agent`).
   "illegal parameter" (`2`), not a session error, and only `baw auth signin` clears it.
 - Error text: `30003001` "From token value greater than 5 USD" means the order is *below* the minimum.
   `103` "one side must be a supported stablecoin ({0})" leaves `{0}` unfilled, so it never says which ones.
+
+**BNB Agent Studio** (`bag` CLI 0.0.14, BSC testnet, throwaway wallet, ~10 minutes on 10 Oct; `packages/agent/studio`).
+We used the CLI directly, not the one-prompt skill. Worked first try: `bag init` (11 s), `bag wallet new`,
+`bag doctor`, and `bag dev` serving an A2A agent card plus an MCP endpoint with 15 read-only tools; our work hook
+(no LLM, reads our `/agent/preview`) type-checks and runs. Did not: the docs put MCP at `:8000/mcp` (it is on
+`:9000/mcp` with A2A+MCP), say to edit `sellerCore.ts` (the hook is `buildRunWork()` in `dualMain.ts` and again in
+`mcpMain.ts`), `studio.toml` has Chinese comments, and a FREE no-LLM agent fails `bag deploy prepare` with
+`commerce_no_rail` until a payment rail is enabled. Not exercised: deploy, ERC-8004 registration (it needs the
+deployed endpoint), ERC-8183 jobs, x402.
 
 **What is missing** (detail in §7): a read-only address-book listing (the agent can't verify the card is the only
 entry), a dry-run for `swap`, a fee/referrer on `market-order swap`, a timeout and a typed "signed out" error, and a
