@@ -81,15 +81,21 @@ export function Targets() {
   }, [current.data, pcts]);
 
   const total = Object.values(pcts).reduce((a, b) => a + b, 0);
-  /** +/- moves in fives, landing on the next multiple of 5 from a typed value like 33. */
+  /** What one stock may take: 100% less everything the others already hold. */
+  const room = (p: Record<string, number>, symbol: string) =>
+    100 - Object.entries(p).reduce((a, [k, v]) => (k === symbol ? a : a + v), 0);
+  /**
+   * +/- moves in fives, landing on the next multiple of 5 from a typed value like 33. A step up
+   * never takes the total past 100%.
+   */
   const step = (symbol: string, dir: 1 | -1) =>
     setPcts((p) => {
       const v = p[symbol] ?? 0;
       const next = dir > 0 ? Math.floor(v / 5) * 5 + 5 : Math.ceil(v / 5) * 5 - 5;
-      return { ...p, [symbol]: Math.max(0, Math.min(100, next)) };
+      return { ...p, [symbol]: Math.max(0, Math.min(room(p, symbol), next)) };
     });
   const setPct = (symbol: string, v: number) =>
-    setPcts((p) => ({ ...p, [symbol]: Math.max(0, Math.min(100, Math.round(v))) }));
+    setPcts((p) => ({ ...p, [symbol]: Math.max(0, Math.min(room(p, symbol), Math.round(v))) }));
   const editingChoice = CHOICES.find((c) => c.symbol === editing);
 
   const save = async () => {
@@ -124,6 +130,39 @@ export function Targets() {
 
   return (
     <div className="flex flex-col">
+      {/* The running total, so a split that doesn't add up is visible before Save refuses it. */}
+      <div
+        className={`mb-5 rounded-[16px] border px-4 py-3 ${
+          total > 100 ? "border-neg/30 bg-[#fbecea]" : "border-line bg-white"
+        }`}
+      >
+        <div className="flex items-baseline justify-between text-[13px]">
+          <span className="font-semibold">Allocated</span>
+          <span
+            className={`font-semibold tabular-nums ${
+              total > 100 ? "text-neg" : total === 100 ? "text-pos" : "text-ink-2"
+            }`}
+          >
+            {total}% / 100%
+          </span>
+        </div>
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-pill">
+          <div
+            className={`h-full rounded-full transition-all ${
+              total > 100 ? "bg-neg" : total === 100 ? "bg-pos" : "bg-ink"
+            }`}
+            style={{ width: `${Math.min(100, total)}%` }}
+          />
+        </div>
+        {total > 100 ? (
+          <p className="mt-2 text-[12px] font-medium text-neg">
+            Over by {total - 100}%. Lower a stock to get back to 100%.
+          </p>
+        ) : total < 100 ? (
+          <p className="mt-2 text-[12px] text-muted">{100 - total}% left to place.</p>
+        ) : null}
+      </div>
+
       {GROUPS.map((g) => (
         <section key={g.title} className="mb-6">
           <div className="mx-1 mb-2 flex items-baseline justify-between gap-3">
@@ -160,7 +199,8 @@ export function Targets() {
                     type="button"
                     aria-label={`More ${c.symbol}`}
                     onClick={() => step(c.symbol, 1)}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
+                    disabled={total >= 100}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold disabled:opacity-30"
                   >
                     +
                   </button>
@@ -214,7 +254,7 @@ export function Targets() {
         symbol={editing === "weekly" ? "$" : ""}
         suffix={editing === "weekly" ? "" : "%"}
         decimals={editing === "weekly"}
-        max={editing === "weekly" ? undefined : 100}
+        max={editing === "weekly" ? undefined : room(pcts, editing ?? "")}
         onClose={() => setEditing(null)}
         onSet={(n) => {
           if (editing === "weekly") setWeekly(String(n));
