@@ -10,7 +10,8 @@ const STATS: { value: number; suffix: string; description: string }[] = [
   {
     value: 1,
     suffix: "%",
-    description: "The most below Friday's close the agent will sell at on a weekend. Worse, it waits",
+    description:
+      "The most below Friday's close the agent will sell at on a weekend. Worse, it waits",
   },
   { value: 0, suffix: "", description: "BNB your card needs to pay. Binance covers the fee" },
   { value: 5, suffix: "%", description: "Drift from your target before the agent rebalances" },
@@ -81,7 +82,9 @@ export function CounterSection() {
             <span className="text-[#18161B]/40"> min</span>
           </span>
 
-          <p className="text-base text-[#18161B]/50 md:text-lg">Before the close, when your card gets topped up</p>
+          <p className="text-base text-[#18161B]/50 md:text-lg">
+            Before the close, when your card gets topped up
+          </p>
         </div>
 
         {/* The cloud overlay the reference layers on top of this is a dead URL

@@ -36,7 +36,8 @@ const CARDS: {
     video: "/insight-3.mp4",
     overlay: "bg-[rgba(218,218,218,0.2)]",
     stat: "Choose",
-    description: "How your stocks are split and roughly what you spend a week. The agent does the rest",
+    description:
+      "How your stocks are split and roughly what you spend a week. The agent does the rest",
     descriptionWidth: "max-w-[351px]",
   },
 ];

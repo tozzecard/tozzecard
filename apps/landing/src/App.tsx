@@ -79,7 +79,8 @@ const PILLARS: { title: string; blurb: string; src: string }[] = [
   },
   {
     title: "The agent can only fill your card",
-    blurb: "Binance lets it send to your address book, and only you can edit that, in the Binance App",
+    blurb:
+      "Binance lets it send to your address book, and only you can edit that, in the Binance App",
     src: "/lock.avif",
   },
   {
@@ -679,9 +680,9 @@ function SpendSection() {
           {/* Wide enough that the sentence lands on two lines, never three. */}
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Your card is a wallet you own, unlocked with your face or fingerprint. It holds dollars
-              (USD1) and pays through Binance, which covers the network fee. You never need BNB to
-              buy a coffee.
+              Your card is a wallet you own, unlocked with your face or fingerprint. It holds
+              dollars (USD1) and pays through Binance, which covers the network fee. You never need
+              BNB to buy a coffee.
             </p>
           </Reveal>
         </div>
