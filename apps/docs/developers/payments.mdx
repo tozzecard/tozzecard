@@ -1,0 +1,56 @@
+---
+title: "Payments"
+description: "B402 (x402 v2) with an EIP-3009 authorization signed by the card."
+icon: "money-bill-transfer"
+---
+
+<Info>
+The demo merchant (`/merchant/*`) returns 404 until Binance approves our B402 application. The flow below is what the app runs once it is on.
+</Info>
+
+B402 is Binance's x402 facilitator on BNB Chain. A merchant server answers `402 Payment Required` with its terms; the payer signs; the merchant asks B402 to verify and settle. B402 submits the transaction and pays the gas, and the funds go straight to the merchant's `payTo` address.
+
+## Create an order
+
+```ts
+const order = await fetch(`${API}/merchant/orders`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ amount: "1.50", description: "Coffee" }),
+}).then((r) => r.json());
+const orderId = order.id;
+```
+
+## Pay it
+
+```ts
+import { paymentHeader, transferAuthorization } from "@tozzecard/binance/eip3009";
+
+const payUrl = `${API}/merchant/orders/${orderId}/pay`;
+
+// 1. The merchant answers 402 with what it accepts.
+const { accepts } = await fetch(payUrl).then((r) => r.json());
+const req = accepts[0];
+
+// 2. The card signs a USD1 transfer authorization for exactly that.
+const { authorization, typedData } = transferAuthorization(req, account.address);
+const signature = await account.signTypedData(typedData);
+
+// 3. Send it back; the merchant verifies and settles through B402.
+const res = await fetch(payUrl, {
+  method: "POST",
+  headers: { "PAYMENT-SIGNATURE": paymentHeader(payUrl, req, authorization, signature) },
+});
+const order = await res.json(); // status: "paid", tx: BSC tx hash
+```
+
+The card holds no BNB at any point: B402 submits the transaction and pays the gas.
+
+## Why USD1
+
+B402 accepts **U** and **USD1** through EIP-3009: a signed transfer, no approval, no gas for the payer. USDT and USDC go through Permit2 instead, which needs a one-time approval that costs gas. The card uses USD1 so it never holds BNB.
+
+| Header | Direction | Content |
+|---|---|---|
+| `PAYMENT-SIGNATURE` | Request | The signed authorization, from `paymentHeader()` |
+| `PAYMENT-RESPONSE` | Response | B402's settlement receipt |

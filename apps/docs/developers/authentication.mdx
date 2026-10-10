@@ -1,17 +1,19 @@
 ---
-title: "Card sign-in"
+title: "Authentication"
 description: "Sign in with the card key itself: no passwords, no custody."
+icon: "key"
 ---
 
-The browser already holds the card key (unlocked by the passkey). Signing a one-time message with it proves
+The browser already holds the card key (unlocked by the passkey, see [The card](/learn/card)). Signing a one-time message with it proves
 ownership. The card itself (number, expiry, CVV) is issued after an identity check with Didit, with the holder
 name taken from the verified document.
 
 ```ts
-import { privateKeyToAccount } from "viem/accounts";
+// `account` is a viem LocalAccount for the card key.
+// The app gets it from the passkey (apps/web/lib/passkey.ts); in a script you can use
+// privateKeyToAccount from "viem/accounts".
 
 const API = "https://api.tozzecard.xyz";
-const account = privateKeyToAccount(cardKey); // unlocked with the passkey
 
 const { message } = await fetch(`${API}/auth/challenge`, {
   method: "POST",
@@ -51,3 +53,7 @@ accepts them as a credential; payments are passkey-signed authorizations.
 </Note>
 
 Tokens last 30 days. `POST /auth/signout` ends one early.
+
+## Errors
+
+Errors are JSON `{ error, code }`. A missing or expired token returns `401`; sign in again.
