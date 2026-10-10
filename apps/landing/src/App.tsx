@@ -578,7 +578,7 @@ function ChatDemoSection() {
  * normal flow.
  */
 /**
- * Top up, before spending: money drops into the wallet and stays there (Axel, 10 Oct). The video
+ * The agent filling the card before the weekend: money drops into the wallet (Axel, 10 Oct). The video
  * has its background removed, so it needs alpha, and no one format carries alpha everywhere:
  * Chrome and Firefox read VP9 WebM with alpha, while Safari (and every browser on iOS, all WebKit)
  * only shows alpha in HEVC, and Chrome on a Mac would take HEVC and drop it. So the source is
@@ -615,15 +615,16 @@ function TopUpSection() {
                 letterSpacing: "-0.03em",
               }}
             >
-              Top up.
+              Filled before
               <br />
-              It stays yours.
+              you need it.
             </h2>
           </Reveal>
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Pay in by card or bank. The money waits in your account, earning, and sets how much
-              your card can spend.
+              Your agent learns how much you spend and when, then tops up your card while the market
+              is open. It sells whatever has grown past your target, so one trade fills the card and
+              keeps your portfolio in shape.
             </p>
           </Reveal>
         </div>
@@ -672,18 +673,18 @@ function SpendSection() {
                 letterSpacing: "-0.03em",
               }}
             >
-              Spend the limit.
+              Tap and pay.
               <br />
-              Not the collateral.
+              No gas, no seed phrase.
             </h2>
           </Reveal>
 
           {/* Wide enough that the sentence lands on two lines, never three. */}
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Your top-up stays put, held as AUSD on Monad. What moves at the till is the credit it
-              earned you, and you settle that before the due date. Nothing is sold to cover a
-              coffee.
+              Your card is a wallet you own, unlocked with your face or fingerprint. It holds dollars
+              (USD1) and pays through Binance, which covers the network fee. You never need BNB to
+              buy a coffee.
             </p>
           </Reveal>
         </div>
