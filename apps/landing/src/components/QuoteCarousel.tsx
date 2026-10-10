@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useInViewAnimation } from "../hooks/useInViewAnimation";
 
@@ -19,32 +19,28 @@ const QUOTES: {
   avatar: string;
 }[] = [
   {
-    quote:
-      "Friday afternoon my card went from 20 to 90 dollars. I had not asked. Saturday I spent 70.",
+    quote: "My card filled up Friday. I spent it Saturday.",
     author: "Jane Major",
     role: "Product Designer",
     company: "Acme",
     avatar: `${PEXELS}/774909/pexels-photo-774909.jpeg${CROP}`,
   },
   {
-    quote:
-      "I used to sell a bit of stock on Sunday night to cover the week. I do not even think about it now.",
+    quote: "I stopped selling stock on Sundays.",
     author: "John Doe",
     role: "Engineer",
     company: "Northwind",
     avatar: `${PEXELS}/220453/pexels-photo-220453.jpeg${CROP}`,
   },
   {
-    quote:
-      "I tried to make the agent send money to a friend. Binance said no. That is exactly what I wanted.",
+    quote: "I asked the agent to pay a friend. Binance said no. Good.",
     author: "Jane Roe",
     role: "Operations",
     company: "Contoso",
     avatar: `${PEXELS}/415829/pexels-photo-415829.jpeg${CROP}`,
   },
   {
-    quote:
-      "Every sale comes with a reason I can read. I check the feed more than I check the price.",
+    quote: "Every sale has a reason I can read.",
     author: "Richard Roe",
     role: "Analyst",
     company: "Initech",
@@ -119,7 +115,6 @@ export function QuoteCarousel({ id }: { id?: string }) {
   });
 
   const heading = reveal("0.1s");
-  const badge = reveal("0.2s");
   const track = reveal("0.3s");
   const controls = reveal("0.4s");
 
@@ -134,21 +129,6 @@ export function QuoteCarousel({ id }: { id?: string }) {
             >
               What <span style={{ fontFamily: "'PP Mondwest', serif" }}>cardholders</span> say
             </h2>
-
-            <div
-              className={`flex flex-col items-start gap-2 md:items-end ${badge.className}`}
-              style={badge.style}
-            >
-              <div className="flex gap-1">
-                {[0, 1, 2, 3, 4].map((star) => (
-                  <Star key={star} className="h-5 w-5 fill-black text-black" />
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-semibold text-[#0D212C]">Early access</span>
-                <span className="text-base text-[#273C46]">5/5</span>
-              </div>
-            </div>
           </div>
 
           <section
