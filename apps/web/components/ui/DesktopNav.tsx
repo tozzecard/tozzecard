@@ -29,9 +29,9 @@ import { SHELL } from "./shell";
  */
 
 const LINKS = [
-  { href: "/home", label: "Overview" },
-  // Only what it shows, and what it is called, became Credit.
-  { href: "/credit", label: "Credit" },
+  { href: "/home", label: "Card" },
+  { href: "/portfolio", label: "Stocks" },
+  { href: "/agent", label: "Agent" },
 ] as const;
 
 function Item({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {

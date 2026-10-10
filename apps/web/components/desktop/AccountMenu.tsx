@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useCard } from "../../hooks/useCard";
 import { useNav } from "../../hooks/useNav";
-import { usePanel } from "../../hooks/usePanel";
-import { useWallet } from "../../hooks/useWallet";
 import { Identicon } from "../account/Identicon";
 import { LogoutSheet } from "../account/LogoutSheet";
 import { Dropdown } from "../ui/Dropdown";
@@ -11,9 +10,9 @@ import { Dropdown } from "../ui/Dropdown";
 const truncate = (address: string) => `${address.slice(0, 4)}...${address.slice(-4)}`;
 
 export function AccountMenu() {
-  const { address, walletName, disconnect } = useWallet();
+  const { session, signOut } = useCard();
+  const address = session?.address;
   const nav = useNav();
-  const { open: openPanel } = usePanel();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -32,7 +31,7 @@ export function AccountMenu() {
   const logout = async () => {
     setConfirming(false);
     setOpen(false);
-    await disconnect();
+    await signOut();
     nav.forward("/");
   };
 
@@ -77,7 +76,7 @@ export function AccountMenu() {
               </button>
             </div>
             <span className="mt-1 block text-[13px] font-medium text-muted">
-              Connected via {walletName ?? "your wallet"}
+              Card address, BNB Chain
             </span>
           </div>
         </div>
@@ -89,7 +88,7 @@ export function AccountMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              openPanel("activity");
+              nav.forward("/home");
             }}
             className="flex w-full items-center gap-[13px] rounded-xl px-3 py-2.5 text-left hover:bg-pill"
           >
@@ -109,7 +108,7 @@ export function AccountMenu() {
             </svg>
             <span className="grow">
               <span className="block text-sm font-semibold">History</span>
-              <span className="block text-xs text-muted">Deposits, spending and payments</span>
+              <span className="block text-xs text-muted">Payments and refills</span>
             </span>
             <svg
               aria-hidden="true"

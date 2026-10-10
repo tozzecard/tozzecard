@@ -15,7 +15,7 @@ export function LogoutSheet({
     <BottomSheet open={open} onClose={onClose} label="Log out">
       <h2 className="mb-1 text-xl font-semibold">Log out?</h2>
       <p className="mb-5 text-sm text-muted">
-        Your funds stay in the vault. Reconnect your wallet any time to see them again.
+        Your card and its money stay yours. Sign back in with the same passkey any time.
       </p>
       <Button onClick={onConfirm}>Yes, log out</Button>
       <button
