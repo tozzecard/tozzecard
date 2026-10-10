@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { PreviewCard } from "../../../components/agent/PreviewCard";
 import { Card, PageHeader, Section, Skeleton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
 import { type AgentSession, bscscanTx, type Decision } from "../../../lib/api";
@@ -68,6 +69,10 @@ export default function AgentPage() {
       <div className="mb-5">
         <SessionCard />
       </div>
+
+      <Section title="Time travel">
+        <PreviewCard />
+      </Section>
 
       <Section title="Decisions">
         {feed.loading ? (
