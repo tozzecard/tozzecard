@@ -54,16 +54,15 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /**
- * Friday afternoon, the agent explaining itself. The point is that the card was filled before the
- * weekend, from the stock that had grown too big, while the market was still open.
+ * The app's activity feed, not a chat: the card's payments on the left, the agent's refill on the
+ * right (plan §3.6). There is no chat with the agent in the product, so none is shown here.
  */
 const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[] = [
-  { speaker: "you", text: "enough for the weekend?" },
-  { speaker: "card", text: "you spend ~$80. card has $20." },
-  { speaker: "you", text: "so?" },
-  { speaker: "card", text: "selling $60 of NVDA." },
-  { speaker: "you", text: "why now?" },
-  { speaker: "card", text: "market closes in 30 min.", emphasis: true },
+  { speaker: "you", text: "Paid $12 at a café." },
+  { speaker: "card", text: "You usually spend $80 a week. Card has $20." },
+  { speaker: "card", text: "Sold $60 of NVDA." },
+  { speaker: "card", text: "Sent $60 to your card." },
+  { speaker: "you", text: "Balance: $80.", emphasis: true },
 ];
 
 /**
@@ -501,7 +500,7 @@ function ChatDemoSection() {
                       started ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    {isYou ? "You:" : "Tozzecard:"}
+                    {isYou ? "Card" : "Agent"}
                   </span>
                 )}
                 {/*
