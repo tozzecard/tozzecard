@@ -4,7 +4,7 @@ import "../index.css";
 
 export const metadata: Metadata = {
   title: "Tozzecard",
-  description: "A card funded by your stocks.",
+  description: "Your stocks, ready to spend.",
   // Transparent mark: dark on a light tab bar, white on a dark one, where the dark mark vanishes.
   icons: {
     icon: [

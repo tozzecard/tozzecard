@@ -320,9 +320,9 @@ function HeroSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            A Card Funded
+            Your Stocks,
             <br />
-            By Your Stocks
+            Ready to Spend
           </h1>
         </div>
 
@@ -331,8 +331,8 @@ function HeroSection() {
           style={{ animationDelay: "0.85s" }}
         >
           <p className="max-w-md text-[15px] leading-relaxed text-white/75 sm:text-base">
-            An agent sells while the market is open and fills your card in dollars. Never at weekend
-            prices.
+            An agent turns a little of your portfolio into dollars on your card, while the market is
+            open.
           </p>
         </div>
       </div>
@@ -387,21 +387,21 @@ function CardSection({ visible, imagesVisible }: { visible: boolean; imagesVisib
           className={staggerClass("font-light text-[#18161B]")}
           style={{ ...h2Style, animationDelay: "0.15s" }}
         >
-          Friday, 4pm
+          Hold Stocks
         </h2>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-8 px-5 pb-10 sm:px-10 sm:pb-14 md:flex-row md:items-end md:justify-between md:px-14 md:pb-16">
         <div className={staggerClass("max-w-md")} style={{ animationDelay: "0.7s" }}>
           <p className="text-[15px] leading-relaxed text-[#18161B]/75 sm:text-base">
-            Prices drift until Monday. Your card is already full.
+            Your agent keeps the card topped up, so you never have to sell in a hurry.
           </p>
         </div>
         <h2
           className={staggerClass("font-light text-[#18161B] md:text-right")}
           style={{ ...h2Style, animationDelay: "0.5s" }}
         >
-          Market Closes
+          Spend Dollars
         </h2>
       </div>
     </section>
