@@ -337,9 +337,9 @@ function HeroSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            Your Stocks Never Sell
+            A Card Funded
             <br />
-            At Weekend Prices
+            By Your Stocks
           </h1>
         </div>
 
@@ -348,9 +348,8 @@ function HeroSection() {
           style={{ animationDelay: "0.85s" }}
         >
           <p className="max-w-md text-[15px] leading-relaxed text-white/75 sm:text-base">
-            An agent holds your tokenized stocks and keeps your card topped up in dollars. It sells
-            while the New York market is open, before you need the money, so paying for dinner on a
-            Saturday never means selling into a closed market.
+            An agent sells while the market is open and fills your card in dollars. Never at weekend
+            prices.
           </p>
         </div>
       </div>
@@ -412,16 +411,14 @@ function CardSection({ visible, imagesVisible }: { visible: boolean; imagesVisib
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-8 px-5 pb-10 sm:px-10 sm:pb-14 md:flex-row md:items-end md:justify-between md:px-14 md:pb-16">
         <div className={staggerClass("max-w-md")} style={{ animationDelay: "0.7s" }}>
           <p className="text-[15px] leading-relaxed text-[#18161B]/75 sm:text-base">
-            New York stops trading until Monday. Your tokenized stocks do not, and the price you get
-            for them has no market behind it. Your agent sells before the bell, so the card already
-            holds what your weekend costs.
+            Prices drift until Monday. Your card is already full.
           </p>
         </div>
         <h2
           className={staggerClass("font-light text-[#18161B] md:text-right")}
           style={{ ...h2Style, animationDelay: "0.5s" }}
         >
-          The Market Closes
+          Market Closes
         </h2>
       </div>
     </section>
