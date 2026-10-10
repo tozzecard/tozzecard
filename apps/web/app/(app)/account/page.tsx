@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { LogoutSheet } from "../../../components/account/LogoutSheet";
-import { Button, Card, CopyButton } from "../../../components/ui";
+import { Button, Card, CopyButton, PageHeader } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
 import { useCard } from "../../../hooks/useCard";
 import { api, type Card as CardFace, type Me } from "../../../lib/api";
@@ -15,8 +15,8 @@ const cleanHolder = (s: string) =>
     .replace(/\s+/g, " ")
     .slice(0, 26);
 
-/** Card settings: the name on the card (PATCH /me), its address, sign out. */
-export default function SettingsPage() {
+/** Account tab: the name on the card (PATCH /me), its address, sign out. */
+export default function AccountPage() {
   const router = useRouter();
   const { session, signOut } = useCard();
   const me = useApi<Me>("/me", 600_000);
@@ -26,7 +26,7 @@ export default function SettingsPage() {
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    if (me.data && !holder) setHolder(me.data.card.holder);
+    if (me.data?.card && !holder) setHolder(me.data.card.holder);
   }, [me.data, holder]);
 
   const rename = async (e: FormEvent) => {
@@ -50,17 +50,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col">
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="self-start text-sm font-medium text-muted"
-      >
-        ← Back
-      </button>
-      <h1 className="mt-4 text-[28px] font-semibold tracking-[-0.03em]">Settings</h1>
+    <div className="mx-auto flex w-full max-w-[560px] flex-col">
+      <PageHeader title="Account" description="Your card and how you sign in." />
 
-      <form onSubmit={rename} className="mt-6 flex flex-col">
+      <form onSubmit={rename} className="flex flex-col">
         <label htmlFor="holder" className="text-[13px] font-medium text-muted">
           Name on the card
         </label>
@@ -74,7 +67,7 @@ export default function SettingsPage() {
           <Button
             type="submit"
             variant="glass"
-            disabled={busy || holder.trim().length < 2 || holder === me.data?.card.holder}
+            disabled={busy || holder.trim().length < 2 || holder === me.data?.card?.holder}
           >
             {busy ? "Saving…" : "Save name"}
           </Button>
@@ -82,7 +75,7 @@ export default function SettingsPage() {
         {note ? <p className="mt-2 text-center text-[13px] text-muted">{note}</p> : null}
       </form>
 
-      {me.data ? (
+      {me.data?.card ? (
         <Card className="mt-6 px-5 py-4">
           <div className="text-[13px] font-medium text-muted">Card address · BNB Chain</div>
           <div className="mt-1 flex items-center gap-2">
@@ -94,7 +87,7 @@ export default function SettingsPage() {
         </Card>
       ) : null}
 
-      <div className="mt-auto pt-8">
+      <div className="pt-8">
         <button
           type="button"
           onClick={() => setConfirming(true)}
