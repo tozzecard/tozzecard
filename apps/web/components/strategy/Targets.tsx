@@ -5,6 +5,7 @@ import { useCard } from "../../hooks/useCard";
 import { ApiError, api } from "../../lib/api";
 import { StockLogo } from "../StockLogo";
 import { Button, Card } from "../ui";
+import { NumberSheet } from "./NumberSheet";
 
 interface Strategy {
   targets: Record<string, number>;
@@ -64,6 +65,8 @@ export function Targets() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Which figure the keypad sheet is editing: a symbol, or the weekly spend.
+  const [editing, setEditing] = useState<string | null>(null);
 
   // Start from the saved strategy, once.
   useEffect(() => {
@@ -78,8 +81,16 @@ export function Targets() {
   }, [current.data, pcts]);
 
   const total = Object.values(pcts).reduce((a, b) => a + b, 0);
-  const step = (symbol: string, by: number) =>
-    setPcts((p) => ({ ...p, [symbol]: Math.max(0, Math.min(100, (p[symbol] ?? 0) + by)) }));
+  /** +/- moves in fives, landing on the next multiple of 5 from a typed value like 33. */
+  const step = (symbol: string, dir: 1 | -1) =>
+    setPcts((p) => {
+      const v = p[symbol] ?? 0;
+      const next = dir > 0 ? Math.floor(v / 5) * 5 + 5 : Math.ceil(v / 5) * 5 - 5;
+      return { ...p, [symbol]: Math.max(0, Math.min(100, next)) };
+    });
+  const setPct = (symbol: string, v: number) =>
+    setPcts((p) => ({ ...p, [symbol]: Math.max(0, Math.min(100, Math.round(v))) }));
+  const editingChoice = CHOICES.find((c) => c.symbol === editing);
 
   const save = async () => {
     setBusy(true);
@@ -132,18 +143,23 @@ export function Targets() {
                   <button
                     type="button"
                     aria-label={`Less ${c.symbol}`}
-                    onClick={() => step(c.symbol, -10)}
+                    onClick={() => step(c.symbol, -1)}
                     className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
                   >
                     −
                   </button>
-                  <span className="w-11 text-center text-[15px] font-semibold tabular-nums">
+                  <button
+                    type="button"
+                    aria-label={`Type a share for ${c.symbol}`}
+                    onClick={() => setEditing(c.symbol)}
+                    className="h-9 w-12 rounded-xl text-center text-[15px] font-semibold tabular-nums active:bg-pill"
+                  >
                     {v}%
-                  </span>
+                  </button>
                   <button
                     type="button"
                     aria-label={`More ${c.symbol}`}
-                    onClick={() => step(c.symbol, 10)}
+                    onClick={() => step(c.symbol, 1)}
                     className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
                   >
                     +
@@ -159,13 +175,14 @@ export function Targets() {
           Weekly spend
         </label>
         <span className="text-[14px] text-muted">$</span>
-        <input
+        <button
           id="weekly"
-          inputMode="decimal"
-          value={weekly}
-          onChange={(e) => setWeekly(e.target.value.replace(/[^0-9.]/g, ""))}
-          className="h-9 w-20 rounded-xl bg-pill px-3 text-right text-[15px] font-semibold tabular-nums outline-none focus:bg-white focus:ring-1 focus:ring-ink"
-        />
+          type="button"
+          onClick={() => setEditing("weekly")}
+          className="h-9 min-w-20 rounded-xl bg-pill px-3 text-right text-[15px] font-semibold tabular-nums"
+        >
+          {weekly}
+        </button>
       </Card>
 
       <div className="mt-5">
@@ -184,6 +201,26 @@ export function Targets() {
                 : `Total ${total}%, needs 100%`}
         </Button>
       </div>
+      <NumberSheet
+        open={editing !== null}
+        title={
+          editing === "weekly"
+            ? "Weekly spend"
+            : editingChoice
+              ? `${editingChoice.name} · ${editingChoice.symbol}`
+              : ""
+        }
+        value={editing === "weekly" ? Number(weekly) || 0 : (pcts[editing ?? ""] ?? 0)}
+        symbol={editing === "weekly" ? "$" : ""}
+        suffix={editing === "weekly" ? "" : "%"}
+        decimals={editing === "weekly"}
+        max={editing === "weekly" ? undefined : 100}
+        onClose={() => setEditing(null)}
+        onSet={(n) => {
+          if (editing === "weekly") setWeekly(String(n));
+          else if (editing) setPct(editing, n);
+        }}
+      />
     </div>
   );
 }
