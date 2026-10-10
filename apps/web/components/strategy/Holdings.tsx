@@ -1,11 +1,10 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { StockLogo } from "../../../components/StockLogo";
-import { Card, PageHeader, Section, Skeleton } from "../../../components/ui";
-import { useApi } from "../../../hooks/useApi";
-import type { Market, Portfolio } from "../../../lib/api";
-import { pct, until, usd } from "../../../lib/format";
+import { useApi } from "../../hooks/useApi";
+import type { Market, Portfolio } from "../../lib/api";
+import { pct, until, usd } from "../../lib/format";
+import { StockLogo } from "../StockLogo";
+import { Card, Section, Skeleton } from "../ui";
 
 interface Strategy {
   targets: Record<string, number>;
@@ -70,26 +69,13 @@ function WeightBar({ weight, target }: { weight: number; target: number }) {
   );
 }
 
-/** Stocks tab (plan §3.4, §3.5): what the agent holds against your targets, and the market clock. */
-export default function PortfolioPage() {
+/** What the agent holds against your targets, and the market clock (plan §3.4, §3.5). */
+export function Holdings() {
   const portfolio = useApi<Portfolio>("/portfolio", 60_000);
   const strategy = useApi<Strategy>("/strategy", 120_000);
 
   return (
-    <div className="mx-auto w-full max-w-[560px]">
-      <PageHeader
-        title="Stocks"
-        description="Held in your own Binance Agentic Wallet."
-        action={
-          <Link
-            href="/strategy"
-            className="inline-flex h-10 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink-2"
-          >
-            Set targets
-          </Link>
-        }
-      />
-
+    <div>
       <div className="mb-5">
         <MarketClock />
       </div>

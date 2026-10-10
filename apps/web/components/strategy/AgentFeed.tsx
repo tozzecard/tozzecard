@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { PreviewCard } from "../../../components/agent/PreviewCard";
-import { Card, PageHeader, Section, Skeleton } from "../../../components/ui";
-import { useApi } from "../../../hooks/useApi";
-import { type AgentSession, bscscanTx, type Decision } from "../../../lib/api";
-import { ago, usd } from "../../../lib/format";
+import { useApi } from "../../hooks/useApi";
+import { type AgentSession, bscscanTx, type Decision } from "../../lib/api";
+import { ago, usd } from "../../lib/format";
+import { PreviewCard } from "../agent/PreviewCard";
+import { Card, Section, Skeleton } from "../ui";
 
 const ACTION: Record<Decision["action"], string> = {
   refill: "Topped up your card",
@@ -51,8 +51,8 @@ function SessionCard() {
   );
 }
 
-/** Agent tab (plan §3.6): every decision with its reason and the transaction behind it. */
-export default function AgentPage() {
+/** The agent's session, time travel, and every decision with its reason and tx (plan §3.6). */
+export function AgentFeed() {
   const feed = useApi<Decision[]>("/agent/decisions?limit=50", 30_000);
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -64,8 +64,7 @@ export default function AgentPage() {
   const rows = (feed.data ?? []).filter((d) => d.action !== "none");
 
   return (
-    <div className="mx-auto w-full max-w-[560px]">
-      <PageHeader title="Agent" description="What it did with your stocks, and why." />
+    <div>
       <div className="mb-5">
         <SessionCard />
       </div>
