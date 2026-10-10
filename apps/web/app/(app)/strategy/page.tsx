@@ -19,7 +19,7 @@ export default function StrategyPage() {
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
-      <PageHeader title="Strategy" />
+      <PageHeader title="Strategy" className="mb-6" />
       {/* The padding lives on this wrapper: the sliding highlight is positioned against the row
           itself, so padding on the row would push the buttons off the highlight. */}
       <div className="mb-4 rounded-full border border-line bg-white p-1">
