@@ -16,6 +16,7 @@
   },
   "navbar": {
     "links": [
+      { "label": "Website", "href": "https://tozzecard.xyz" },
       { "label": "GitHub", "href": "https://github.com/tozzecard/tozzecard" },
       { "label": "API status", "href": "https://api.tozzecard.xyz/health" }
     ],
