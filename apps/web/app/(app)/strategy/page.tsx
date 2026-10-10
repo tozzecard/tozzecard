@@ -33,13 +33,11 @@ export default function StrategyPage() {
         }
       />
       <StatusPills />
-      <SlidingTabs
-        options={TABS}
-        value={tab}
-        onChange={setTab}
-        label="Strategy sections"
-        className="mt-5 mb-4 rounded-full border border-line bg-white p-1"
-      />
+      {/* The padding lives on this wrapper: the sliding highlight is positioned against the row
+          itself, so padding on the row would push the buttons off the highlight. */}
+      <div className="mt-5 mb-4 rounded-full border border-line bg-white p-1">
+        <SlidingTabs options={TABS} value={tab} onChange={setTab} label="Strategy sections" />
+      </div>
       <TabPanel key={tab}>
         {tab === "targets" ? <Targets /> : tab === "activity" ? <AgentFeed /> : <PreviewCard />}
       </TabPanel>
