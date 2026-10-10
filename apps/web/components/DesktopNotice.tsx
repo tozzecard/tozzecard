@@ -59,7 +59,6 @@ export function DesktopNotice() {
         <div className="mt-5 rounded-[20px] border border-line bg-white p-4">
           <QRCode value={APP_URL} size={148} />
         </div>
-        <p className="mt-2 text-[12px] text-faint">app.tozzecard.xyz</p>
         <div className="mt-6 w-full">
           <Button type="button" variant="glass" onClick={stay}>
             Continue on desktop
