@@ -1,13 +1,25 @@
 "use client";
 import { useState } from "react";
 
-/** Marks downloaded into public/stocks. Anything else gets its first letter. */
+/** Stock marks in public/stocks, token marks (Trust Wallet assets) in public/tokens. */
 const HAVE = new Set(["AAPL", "NVDA", "MSFT", "TSLA", "AMZN", "GOOGL", "META", "SPY"]);
+const TOKENS = new Set(["BNB", "USDT", "USD1", "U"]);
 
 export function StockLogo({ ticker, size = 36 }: { ticker: string; size?: number }) {
   const [broken, setBroken] = useState(false);
   const t = ticker.toUpperCase();
   const dark = t === "AMZN"; // Amazon's mark is white
+  if (TOKENS.has(t) && !broken)
+    return (
+      // biome-ignore lint/performance/noImgElement: tiny static mark
+      <img
+        src={`/tokens/${t}.png`}
+        alt={t}
+        onError={() => setBroken(true)}
+        style={{ width: size, height: size }}
+        className="shrink-0 rounded-full object-cover"
+      />
+    );
   return (
     <span
       style={{ width: size, height: size }}
