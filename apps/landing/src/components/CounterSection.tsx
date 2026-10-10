@@ -7,14 +7,9 @@ const GLOBE_VIDEO = "/counter.mp4";
 
 // Each figure is a setting in apps/api (refill.ts DEFAULTS, scheduler.ts DRIFT). Change them together.
 const STATS: { value: number; suffix: string; description: string }[] = [
-  {
-    value: 1,
-    suffix: "%",
-    description:
-      "The most below Friday's close the agent will sell at on a weekend. Worse, it waits",
-  },
-  { value: 0, suffix: "", description: "BNB your card needs to pay. Binance covers the fee" },
-  { value: 5, suffix: "%", description: "Drift from your target before the agent rebalances" },
+  { value: 1, suffix: "%", description: "Most it gives up on a weekend" },
+  { value: 0, suffix: "", description: "BNB needed" },
+  { value: 5, suffix: "%", description: "Drift before it rebalances" },
 ];
 
 /** Ease-out cubic. Fast at the start, so the number feels like it lands. */
@@ -63,7 +58,7 @@ export function CounterSection() {
       <div className="mx-auto flex max-w-[1260px] flex-col items-center gap-[60px] px-6 text-center">
         <div className="flex max-w-[500px] flex-col items-center gap-5">
           <span className="rounded-full border border-[#18161B]/10 bg-white px-4 py-2 text-[13px] text-[#18161B]/60">
-            Sell before the bell
+            Market hours
           </span>
 
           <h2
@@ -74,7 +69,7 @@ export function CounterSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            The agent watches the New York clock, so you do not have to
+            It watches the clock
           </h2>
 
           <span className="mt-2 text-[60px] font-light leading-none tracking-[-0.03em] text-[#18161B] md:text-[100px] lg:text-[120px]">
@@ -83,7 +78,7 @@ export function CounterSection() {
           </span>
 
           <p className="text-base text-[#18161B]/50 md:text-lg">
-            Before the close, when your card gets topped up
+            Before the close, your card is filled
           </p>
         </div>
 

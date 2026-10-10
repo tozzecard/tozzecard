@@ -20,7 +20,7 @@ const CARDS: {
     video: "/insight-1.mp4",
     overlay: "bg-[rgba(206,223,235,0.25)]",
     stat: "Make",
-    description: "Your card, with your face or fingerprint. No seed phrase, no password",
+    description: "Your card, with Face ID",
     descriptionWidth: "max-w-[377px]",
   },
   {
@@ -28,7 +28,7 @@ const CARDS: {
     video: "/insight-2.mp4",
     overlay: "bg-[rgba(247,236,233,0.6)]",
     stat: "Connect",
-    description: "Your Binance wallet, then add your card as the one address it can send to",
+    description: "Your Binance wallet",
     descriptionWidth: "max-w-[351px]",
   },
   {
@@ -36,8 +36,7 @@ const CARDS: {
     video: "/insight-3.mp4",
     overlay: "bg-[rgba(218,218,218,0.2)]",
     stat: "Choose",
-    description:
-      "How your stocks are split and roughly what you spend a week. The agent does the rest",
+    description: "Your stocks and weekly budget",
     descriptionWidth: "max-w-[351px]",
   },
 ];
@@ -63,7 +62,7 @@ export function InsightsSection({ id }: { id?: string }) {
             </h2>
           </BlurIn>
           <p className="font-helvetica-neue max-w-[361px] text-base text-[#49484F] md:text-lg lg:text-xl">
-            Three steps, then the agent takes it from there
+            Three steps.
           </p>
         </div>
 
