@@ -1,14 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { LogoutSheet } from "../../../components/account/LogoutSheet";
 import { ReceiveSheet } from "../../../components/account/ReceiveSheet";
 import { ActivityList } from "../../../components/activity/ActivityList";
 import { CardArtwork } from "../../../components/card/CardArtwork";
 import { CardFolder } from "../../../components/motion/card-folder";
 import { ActionPill, ActionRow, Card, Section, Skeleton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
-import { useCard } from "../../../hooks/useCard";
 import type { ActivityItem } from "../../../lib/activity";
 import { type Activity, bscscanTx, type Me } from "../../../lib/api";
 import { ago, signedUsd, usd } from "../../../lib/format";
@@ -34,9 +32,8 @@ export default function HomePage() {
   const me = useApi<Me>("/me");
   const activity = useApi<Activity[]>("/me/activity");
   const router = useRouter();
-  const { signOut } = useCard();
   const [shown, setShown] = useState(false);
-  const [sheet, setSheet] = useState<"receive" | "logout" | null>(null);
+  const [sheet, setSheet] = useState<"receive" | null>(null);
   // The clock is read after mount: a relative time baked into server HTML breaks hydration.
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -88,9 +85,7 @@ export default function HomePage() {
           <ActionPill onClick={() => setSheet("receive")} disabled={!card}>
             Add money
           </ActionPill>
-          <ActionPill onClick={() => setSheet("logout")} className="lg:hidden">
-            Sign out
-          </ActionPill>
+          <ActionPill onClick={() => router.push("/settings")}>Settings</ActionPill>
         </ActionRow>
       </Card>
 
@@ -136,14 +131,6 @@ export default function HomePage() {
         open={sheet === "receive"}
         onClose={() => setSheet(null)}
         address={card?.address ?? ""}
-      />
-      <LogoutSheet
-        open={sheet === "logout"}
-        onClose={() => setSheet(null)}
-        onConfirm={() => {
-          setSheet(null);
-          void signOut().then(() => router.replace("/"));
-        }}
       />
     </div>
   );

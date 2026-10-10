@@ -88,7 +88,7 @@ export function AccountMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              nav.forward("/home");
+              nav.forward("/settings");
             }}
             className="flex w-full items-center gap-[13px] rounded-xl px-3 py-2.5 text-left hover:bg-pill"
           >
@@ -107,8 +107,8 @@ export function AccountMenu() {
               <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
             </svg>
             <span className="grow">
-              <span className="block text-sm font-semibold">History</span>
-              <span className="block text-xs text-muted">Payments and refills</span>
+              <span className="block text-sm font-semibold">Settings</span>
+              <span className="block text-xs text-muted">Name on the card, address</span>
             </span>
             <svg
               aria-hidden="true"
