@@ -29,7 +29,12 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["index", "overview/how-it-works", "overview/supported", "overview/fees-and-limits"]
+            "pages": [
+              "index",
+              "overview/how-it-works",
+              "overview/supported",
+              "overview/fees-and-limits"
+            ]
           },
           {
             "group": "Using Tozzecard",
