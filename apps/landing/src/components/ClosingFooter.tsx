@@ -37,7 +37,7 @@ const FOOTER_LINKS: { heading: string; items: { label: string; href: string }[] 
     items: [
       { label: "How it works", href: "#start" },
       { label: "What you get", href: "#features" },
-      { label: "Cardholders", href: "#features" },
+      { label: "Cardholders", href: "#cardholders" },
     ],
   },
   {
@@ -45,7 +45,7 @@ const FOOTER_LINKS: { heading: string; items: { label: string; href: string }[] 
     items: [
       { label: "GitHub", href: "https://github.com/tozzecard/tozzecard" },
       { label: "Docs", href: "https://github.com/tozzecard/tozzecard#readme" },
-      { label: "Monad", href: "https://monad.xyz" },
+      { label: "BNB Chain", href: "https://www.bnbchain.org" },
     ],
   },
 ];
@@ -96,12 +96,12 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
               // fixed size left the words with almost no gutter.
               style={{ fontSize: "clamp(2.25rem, 11vw, 3.5rem)", letterSpacing: "-0.03em" }}
             >
-              Spend it.
+              Spend any day.
               <br />
-              Keep it.
+              Sell on a good one.
             </h2>
             <p className="mb-[30px] text-[0.95rem] font-normal opacity-85">
-              Top up once and stop choosing between saving and paying
+              Let the agent sell at the right time, so you never sell at the wrong one
             </p>
             <a
               href={APP_URL}
@@ -160,7 +160,7 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
               {/* biome-ignore lint/performance/noImgElement: static asset that must paint the moment the step appears; next/image defers it */}
               <img src={logoSrc} alt="Tozzecard" className="mb-[15px] h-6 w-6" />
               <p className="max-w-[220px] text-[0.85rem] leading-[1.6] text-[#888]">
-                Top up once. Spend what it earns you. Keep your record wherever you go.
+                Your stocks, managed by an agent. Your spending, from a card you own.
               </p>
             </div>
 
