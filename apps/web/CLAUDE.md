@@ -25,3 +25,10 @@ Cardholder app at `app.tozzecard.xyz` (Next.js 16, React 19, Tailwind 4). Owner:
   off. `useApi` reports that as `off`; screens show "not running", never an error.
 - Passkeys are bound to the hostname: a card made on localhost does not exist on app.tozzecard.xyz.
 - Read the clock in an effect, never during render (hydration).
+
+## Deploy
+
+Vercel project `tozzecard-web` (Root Directory `apps/web`) is connected to `tozzecard/tozzecard`:
+every merge to `main` deploys `app.tozzecard.xyz`, every PR gets a preview. `vercel.json` skips the
+build when a commit touches nothing under `apps/web`, `packages/binance`, the root `package.json` or
+`bun.lock`. The landing (`tozzecard-landing`, `apps/landing`) works the same way for `tozzecard.xyz`.
