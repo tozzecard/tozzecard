@@ -80,13 +80,15 @@ API 50, onboarding 20. (Plus 2 notes / 30 min in Fajar's open #42.)
 ## 4. AI stack: Agentic Wallet + `baw` CLI
 
 We used the **Agentic Wallet through the `baw` CLI** (1.10.0) as the agent's wallet, driven from our server, and the
-skills-hub `binance-agentic-wallet` references as documentation. `TODO Fajar: did we use Wallet Skills directly, or only read them?`
+skills-hub `binance-agentic-wallet` references as documentation only: we never installed or ran a Wallet Skill from an
+AI agent. Every wallet action is our own code calling `baw` (`packages/agent`).
 
 **What worked**
 - **The address book is the security model.** `baw wallet send` to an address outside it fails server-side with
   `351703` "recipient address is not in your address book", even in Developer Mode. Because of this we wrote no
   smart contract: the agent can only ever pay the user's card.
-- Swaps are fast and real: USDT→NVDAon and back in ~6 s, Ondo swaps gas-relayed (agent pays 0 BNB).
+- Swaps are real and settle on mainnet. Ondo swaps are relayed (tx `from` is a Binance relayer, agent pays 0 BNB);
+  a plain USDT→USD1 swap is sent by the agent wallet and costs ~0.0001 BNB. Who pays gas is not documented. 15 min.
 - `--json` on every command made it scriptable.
 
 **What did not**
@@ -103,9 +105,10 @@ skills-hub `binance-agentic-wallet` references as documentation. `TODO Fajar: di
   address, random per container: a restart gives `NOT_LOGGED_IN`. The fix is the undocumented
   `BINANCE_INSTANCE_ID` env var (plus undocumented `BINANCE_BAW_DIR`), found by reading `dist/index.js`. 40 min.
 - **One session per wallet**: signing in on the server signed the laptop out. A fresh session lasts **48 h**
-  (`signInMaxTime`), the first one we had lasted 7 days. A server agent needs a QR re-sign-in every 2 days.
-- A session died ~15 h before `sessionExpireTime`; the first call returned `SERVICE_ERROR` "illegal parameter" (`2`),
-  not a session error.
+  (`signInMaxTime`); the first one on the same wallet had `signInMaxTime` +7 days. A server agent needs a QR
+  re-sign-in every 2 days.
+- A session died ~15 h after sign-in, well before its `sessionExpireTime`. Calls then return `SERVICE_ERROR`
+  "illegal parameter" (`2`), not a session error, and only `baw auth signin` clears it.
 - Error text: `30003001` "From token value greater than 5 USD" means the order is *below* the minimum.
   `103` "one side must be a supported stablecoin ({0})" leaves `{0}` unfilled, so it never says which ones.
 
