@@ -782,9 +782,6 @@ function BinanceSection() {
           className="absolute inset-0 h-full w-full object-cover"
         />
       )}
-      <p className="absolute inset-x-0 bottom-10 text-center text-[15px] text-[#18161B]/60 sm:bottom-14 sm:text-base">
-        Runs on your own Binance wallet.
-      </p>
     </section>
   );
 }
