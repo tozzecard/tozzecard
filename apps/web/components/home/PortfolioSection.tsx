@@ -11,8 +11,8 @@ const CARD =
 /** What a non-stock line in the agent wallet is. */
 const TOKEN_NAME: Record<string, string> = {
   BNB: "Pays the agent's swap fees",
-  USDT: "Dollars, not on your card yet",
-  USD1: "Dollars, not on your card yet",
+  USDT: "Tether USD",
+  USD1: "World Liberty USD",
   U: "United Stables",
 };
 
@@ -41,6 +41,23 @@ function Row({ h }: { h: Holding }) {
   );
 }
 
+const byKind = (rows: Holding[]) =>
+  [...rows].sort(
+    (a, b) => Number(Boolean(b.market)) - Number(Boolean(a.market)) || b.valueUsd - a.valueUsd,
+  );
+
+/** The agent wallet's rows, stocks first, then tokens. */
+export function PortfolioList({ data, loading }: { data: Portfolio | null; loading: boolean }) {
+  if (loading && !data) return <Skeleton className="h-[140px] w-full rounded-[16px]" />;
+  return (
+    <div className={`${CARD} divide-y divide-line`}>
+      {byKind(data?.holdings ?? []).map((h) => (
+        <Row key={h.address} h={h} />
+      ))}
+    </div>
+  );
+}
+
 /**
  * The agent wallet (your Binance Agentic Wallet): the stocks it holds and what they are worth,
  * against your targets. Hidden while the server's agent is off (`/portfolio` 404).
@@ -48,9 +65,6 @@ function Row({ h }: { h: Holding }) {
 export function PortfolioSection({ className = "" }: { className?: string }) {
   const { data, loading, off } = useApi<Portfolio>("/portfolio", 60_000);
   if (off) return null;
-  const rows = [...(data?.holdings ?? [])].sort(
-    (a, b) => Number(Boolean(b.market)) - Number(Boolean(a.market)) || b.valueUsd - a.valueUsd,
-  );
   return (
     <Section
       title="Agent wallet"
@@ -64,15 +78,7 @@ export function PortfolioSection({ className = "" }: { className?: string }) {
       }
       className={className}
     >
-      {loading && !data ? (
-        <Skeleton className="h-[140px] w-full rounded-[16px]" />
-      ) : (
-        <div className={`${CARD} divide-y divide-line`}>
-          {rows.map((h) => (
-            <Row key={h.address} h={h} />
-          ))}
-        </div>
-      )}
+      <PortfolioList data={data} loading={loading} />
     </Section>
   );
 }
