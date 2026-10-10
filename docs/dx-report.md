@@ -11,8 +11,8 @@ and refills a passkey card wallet in USD1 while the US market is open; the card 
 real money, `baw` 1.10.0, Binance Web3 API (RWA Data, Trading, B402). 28 Sep – 11 Oct 2026, team of three,
 working from Indonesia; API server in Kuala Lumpur.
 
-Totals from our log: **45 notes, ~345 minutes lost**: AI stack 150, tokenized-stock data 70, docs 65,
-API 40, onboarding 20.
+Totals from our log: **47 notes, ~360 minutes lost**: AI stack 150, tokenized-stock data 75, docs 65,
+API 50, onboarding 20. (Plus 2 notes / 30 min in Fajar's open #42.)
 
 ---
 
@@ -28,6 +28,8 @@ API 40, onboarding 20.
   - **B402 is a separate onboarding.** A normal key gets `40104 No permission: B402` (HTTP 403). Nothing in the
     first-key flow says B402 needs its own application, a new key, and a **write-once** `payTo`. The application
     also requires a website URL, so we needed a domain before we could test payments at all. 10 min.
+    `TODO Kiel: date we applied for B402. Still no permission on 10 Oct, so the demo merchant never settled a real
+    B402 payment (MERCHANT_PAY_TO unset).`
   - **Indonesian ISPs block `*.binance.com` by DNS**, even with 1.1.1.1 set. The same block surfaced as three
     different errors: `NETWORK_ERROR` "Connection refused" (baw, 28 Sep), `SSL_ERROR` "certificate has expired"
     `50001005` (baw, 29 Sep), `ERR_TLS_CERT_ALTNAME_INVALID` (Web3 API from Bun, 4 Oct). Each one reads like a
@@ -70,6 +72,9 @@ API 40, onboarding 20.
   errorData, data}` vs `{code: 0, msg, data, success}` everywhere else.
 - **bStocks carry no market hours**: all 46 BSC bStock tokens return `marketStatus`, `nextOpenTime`,
   `nextCloseTime` = `null`. We borrow SPYon's status.
+- **`rwa/platforms` and `rwa/tokens` disagree** (10 Oct). Platforms: BSC has Ondo 458 + bStock 91, and Ondo is on
+  chains `1` (457) and `CT_501` (451). `rwa/tokens?binanceChainId=56` returns 488 (Ondo 442 + bStock 46), and for
+  `1` and `CT_501`, the ids platforms itself returns, an empty list with no error. 10 min.
 - Latency was never a problem: 282 ms (`rwa/platforms`), 330 ms (`rwa/tokens`, 488 tokens).
 
 ## 4. AI stack: Agentic Wallet + `baw` CLI
@@ -116,7 +121,12 @@ library/HTTP API instead of a CLI per wallet.
 - **Outside market hours** (Sat 3 Oct 16:54 UTC, #31): Ondo's on-chain price equals Friday's close × multiplier
   within ±0.01% for NVDA, AAPL, TSLA, MSFT, AMZN, GOOGL, META. It is pinned, not a market, so any weekend discount only
   shows in an executable quote. Status `offhours` (undocumented). bStock `stockInfo.price` is `null` all weekend.
-  `TODO: executable weekend quotes, #31 part 2 (Sat 10 Oct). This is the demo's "selling on Saturday costs X%" number.`
+- **Executable weekend quotes** (`baw market-order quote`, Sun 4 Oct 16:33 UTC, sell $20 vs the per-share
+  reference, #31): no weekend discount. bStock +3…+21 bps, Ondo +13…+76 bps, the same range as a weekday
+  premarket (28 Sep: bStock +3…+17, Ondo +9…+68). What a weekend seller pays is Ondo's spread and fixed cost, not
+  the weekend itself. Ondo's buy side was cheaper than the reference for 4 of 7 tickers (e.g. MSFT −45 bps at $20),
+  sell side always worse.
+  `TODO Fajar: second sample Sat 10 / Sun 11 Oct (#31) before 11 Oct 12:00 UTC; one weekend is one sample.`
 - **On-chain vs reference gap**: not measurable from the API, since `referencePrice` is derived from the on-chain
   price (§3). We keep our own close reference.
 - **bStocks vs Ondo, same underlying**:
@@ -126,8 +136,8 @@ library/HTTP API instead of a CLI per wallet.
   - Market status exists for Ondo only.
   - NVDAB vs NVDAon, premarket 28 Sep: 227.70 vs 228.06 per token, ratios 1.00078 vs 1.00172, per share 227.52 vs
     227.67. On the weekend bStock traded 0.03–0.41% under Ondo.
-  - **xStocks**: `rwa/tokens?binanceChainId=56` returned 488 tokens, Ondo 442 + bStock 46, no xStocks on BSC, so we
-    couldn't compare. `TODO: confirm.`
+  - **xStocks**: not on this API. `rwa/platforms` (10 Oct) lists only `ondo` and `bstock`, and
+    `rwa/tokens?binanceChainId=56` returns 488 tokens, Ondo 442 + bStock 46. We couldn't compare xStocks at all.
 
 ## 6. Redesign suggestions
 
