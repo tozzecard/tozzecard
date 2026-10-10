@@ -2,21 +2,104 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Tozzecard",
-  "colors": { "primary": "#F0B90B", "light": "#F8D12F", "dark": "#C99400" },
+  "description": "Your stocks, managed by an agent. Your spending, from a card you own. Built on BNB Chain.",
+  "colors": {
+    "primary": "#C99400",
+    "light": "#F0B90B",
+    "dark": "#C99400"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://tozzecard.xyz"
+  },
   "navbar": {
-    "links": [{ "label": "GitHub", "href": "https://github.com/tozzecard/tozzecard" }],
+    "links": [
+      { "label": "GitHub", "href": "https://github.com/tozzecard/tozzecard" },
+      { "label": "API status", "href": "https://api.tozzecard.xyz/health" }
+    ],
     "primary": { "type": "button", "label": "Open the app", "href": "https://app.tozzecard.xyz" }
   },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guide",
+        "tab": "Get started",
         "groups": [
-          { "group": "Get started", "pages": ["index", "how-it-works"] },
-          { "group": "Build on the API", "pages": ["card-sign-in", "paying"] }
+          {
+            "group": "Overview",
+            "pages": ["index", "overview/how-it-works", "overview/supported", "overview/fees-and-limits"]
+          },
+          {
+            "group": "Using Tozzecard",
+            "pages": [
+              "guides/create-card",
+              "guides/activate-card",
+              "guides/top-up",
+              "guides/pay",
+              "guides/strategy",
+              "guides/other-devices"
+            ]
+          },
+          {
+            "group": "Project",
+            "pages": ["overview/status", "overview/faq"]
+          }
         ]
       },
-      { "tab": "API reference", "openapi": "https://api.tozzecard.xyz/openapi.json" }
+      {
+        "tab": "Learn",
+        "groups": [
+          {
+            "group": "The two wallets",
+            "pages": ["learn/card", "learn/agent-wallet"]
+          },
+          {
+            "group": "The agent",
+            "pages": ["learn/refill", "learn/weekend-prices", "learn/rebalance", "learn/decisions"]
+          },
+          {
+            "group": "Trust and security",
+            "pages": ["learn/trust-model", "learn/risks"]
+          }
+        ]
+      },
+      {
+        "tab": "Build",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": ["developers/architecture", "developers/run-locally"]
+          },
+          {
+            "group": "Integrate",
+            "pages": ["developers/authentication", "developers/payments", "developers/agent-api"]
+          },
+          {
+            "group": "Operate",
+            "pages": ["developers/deploy"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "openapi": "https://api.tozzecard.xyz/openapi.json"
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Reference",
+            "pages": ["resources/contracts", "resources/parameters", "resources/glossary"]
+          }
+        ]
+      }
     ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/tozzecard/tozzecard",
+      "website": "https://tozzecard.xyz"
+    }
   }
 }

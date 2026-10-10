@@ -1,0 +1,56 @@
+---
+title: "Supported"
+description: "Network, tokens, stocks, devices."
+icon: "list-check"
+---
+
+## Network
+
+| | |
+|---|---|
+| Chain | BNB Chain mainnet (BSC), chain ID `56` |
+| Explorer | [bscscan.com](https://bscscan.com) |
+
+## Tokens
+
+| Token | Where | Used for |
+|---|---|---|
+| **USD1** | Card | What the card holds and pays with |
+| **USDT** | Agent wallet | The step between an Ondo stock and USD1 |
+| **BNB** | Agent wallet | Gas for the agent's swaps. The card never needs it |
+
+Addresses are on [Contracts and tokens](/resources/contracts).
+
+## Stocks
+
+The app lets you pick from these. The agent can only hold what the [Binance Web3 API](https://web3.binance.com/en/dev-portal) lists as tradable.
+
+| Company | bStock (Binance) | Ondo |
+|---|---|---|
+| NVIDIA | NVDAB | NVDAon |
+| Microsoft | MSFTB | MSFTon |
+| Alphabet | GOOGLB | GOOGLon |
+| Meta | METAB | METAon |
+| Tesla | TSLAB | TSLAon |
+| Apple | — | AAPLon |
+| Amazon | — | AMZNon |
+
+bStocks swap straight to USD1. Ondo stocks swap to USDT first, then USDT to USD1.
+
+<Note>
+Tokenized stocks are not available to everyone. Ondo tokens cannot be bought by US persons or people in restricted countries, and bStocks are open only to users in permitted jurisdictions. Check the issuer's terms for where you live.
+</Note>
+
+## Devices
+
+The card's key comes from your passkey, through a passkey feature called PRF. Your passkey provider has to support it:
+
+| Provider | Works |
+|---|---|
+| iCloud Keychain (iPhone, iPad, Mac) | Yes, on iOS 18 / macOS 15 or later |
+| Google Password Manager (Chrome, Android) | Yes |
+| 1Password | Yes |
+
+If your device can't, the app tells you when you create the card: *"This device's passkeys can't hold a card key."* Pick one of the providers above and try again.
+
+Tozzecard is made for phones. On a desktop, the app shows a QR code to open it on your phone instead.

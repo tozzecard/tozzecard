@@ -1,28 +1,74 @@
 ---
-title: "Tozzecard"
-description: "Your stocks, managed by an agent. Your spending, from a card you own. And your card never sells at weekend prices."
+title: "Introduction"
+description: "Your stocks, managed by an agent. Your spending, from a card you own."
+icon: "house"
 ---
 
-Tokenized stocks trade around the clock; the market behind them does not. From Friday 4pm New York
-to Monday morning the reference price is frozen while the on-chain price drifts, so anyone who sells
-stock to pay for something over the weekend sells at a discount.
+<Info>
+  Tozzecard runs on **BNB Chain mainnet** with real, small amounts. It is built for the [BNB Chain × Binance Web3 Wallet Tokenized Stocks hackathon](https://www.bnbchain.org/en/hackathons/tokenized-stocks). See [Status](/overview/status) for what is live today.
+</Info>
 
-Tozzecard splits the job in two:
+## The problem
 
-- **The agent wallet** holds your tokenized stocks (Ondo, bStocks). It buys, rebalances and refills your card.
-- **The card** is a wallet you own (passkey, no seed phrase) that holds USD1 and pays through B402, Binance's gasless x402 rail. It never needs BNB.
+Tokenized stocks trade around the clock. The market behind them does not.
+
+From Friday 4pm in New York until Monday morning, the real stock price stops moving, while the token keeps trading on-chain. If you sell stock on a Saturday to pay for dinner, you sell at whatever the token happens to be worth that day, often below Friday's close.
+
+And most crypto cards hold your money for you: you move your balance to the card company, and you spend theirs.
+
+## The solution
+
+Tozzecard splits the job between two wallets that you own.
 
 <CardGroup cols={2}>
-  <Card title="How it works" icon="diagram-project" href="/how-it-works">
-    The two wallets, the refill, and what Binance and BNB Chain do.
+  <Card title="The agent wallet" icon="robot">
+    Your own Binance Agentic Wallet holds your tokenized stocks. An agent keeps them at your target split.
   </Card>
-  <Card title="API reference" icon="code" href="https://api.tozzecard.xyz/docs">
-    Every endpoint, also live as Swagger UI.
+  <Card title="The card" icon="credit-card">
+    A wallet made from your passkey. It holds USD1 and pays with Face ID. It never needs BNB.
+  </Card>
+  <Card title="Refills while the market is open" icon="clock">
+    The agent learns what you spend and tops up the card before the market closes, so it never has to sell at weekend prices.
+  </Card>
+  <Card title="It can only send to your card" icon="shield-check">
+    The Agentic Wallet sends only to addresses in its address book, which only you can edit, in the Binance App.
   </Card>
 </CardGroup>
 
+No seed phrase, no gas to buy, and no contract of ours: every contract involved belongs to Binance, BNB Chain or the token issuer.
+
+## Who these docs are for
+
+<CardGroup cols={3}>
+  <Card title="Users" icon="user" href="/guides/create-card">
+    Create a card, activate it, top up, pay and set your strategy.
+  </Card>
+  <Card title="Curious minds" icon="book-open" href="/learn/card">
+    How the card, the agent and the refill rules work, and what you trust.
+  </Card>
+  <Card title="Developers" icon="code" href="/developers/architecture">
+    The API, the agent, and how to run it all yourself.
+  </Card>
+</CardGroup>
+
+## At a glance
+
 | | |
-| --- | --- |
-| App | https://app.tozzecard.xyz |
-| API | https://api.tozzecard.xyz |
-| Code | https://github.com/tozzecard/tozzecard |
+|---|---|
+| Network | BNB Chain mainnet (BSC, chain `56`) |
+| Card currency | [USD1](https://bscscan.com/token/0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d), a US dollar stablecoin |
+| Payments | B402, Binance's x402 payment rail. Binance pays the network fee |
+| Stocks | Binance bStocks and Ondo tokenized stocks on BNB Chain |
+| Agent | Binance Agentic Wallet, driven through the `baw` CLI |
+| Sign-in | Passkey (Face ID, Touch ID or fingerprint) |
+| Identity | Didit: an ID photo and a selfie, one card per person |
+
+| | |
+|---|---|
+| App | [app.tozzecard.xyz](https://app.tozzecard.xyz) |
+| API | [api.tozzecard.xyz](https://api.tozzecard.xyz/docs) |
+| Code | [github.com/tozzecard/tozzecard](https://github.com/tozzecard/tozzecard) |
+
+<Card title="Start with how it works" icon="arrow-right" href="/overview/how-it-works" horizontal>
+  The flow from card to refill, in five steps.
+</Card>

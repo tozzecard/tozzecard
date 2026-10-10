@@ -1,0 +1,28 @@
+---
+title: "Fees and limits"
+description: "What a payment, a refill and a swap cost, and the limits that apply."
+icon: "receipt"
+---
+
+## Fees
+
+| Action | Cost to you |
+|---|---|
+| Creating and activating a card | Free |
+| Paying with the card | Free. B402 pays the network fee, so the card never holds BNB |
+| Topping up the card | Whatever your sending wallet charges for a BSC transfer |
+| An agent refill | The swap's price impact, plus a little BNB gas from the agent wallet for plain swaps (about 0.0001 BNB each). Ondo trades are relayed by Binance and cost the agent 0 BNB |
+
+Tozzecard takes no fee today. The plan is a small merchant fee on card payments, paid by the shop, the way card networks work. It is not switched on.
+
+## Limits
+
+| Limit | Value | Set by |
+|---|---|---|
+| Smallest agent trade | **$5** | Binance rejects market orders below this |
+| Most the agent can send a day | Your choice | The daily limit in your Agentic Wallet settings, in the Binance App |
+| Where the agent can send | Your card only | The address book in your Agentic Wallet, in the Binance App |
+| Target split | Must add up to 100% | The app |
+| Cards per person | One | Didit: a second card for the same ID ends as *ID already used* |
+
+Because of the $5 minimum, a position worth less than the refill it would need can't be sold. The agent then holds and says why. See [Decisions](/learn/decisions).
