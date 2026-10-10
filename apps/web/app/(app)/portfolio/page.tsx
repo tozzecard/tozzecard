@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { StockLogo } from "../../../components/StockLogo";
 import { Card, PageHeader, Section, Skeleton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
 import type { Market, Portfolio } from "../../../lib/api";
@@ -96,8 +97,9 @@ export default function PortfolioPage() {
             <Card className="divide-y divide-line px-5">
               {portfolio.data.holdings.map((h) => (
                 <div key={h.address} className="py-4">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <StockLogo ticker={h.market?.ticker ?? h.symbol.replace(/(on|B)$/, "")} />
+                    <div className="min-w-0 flex-1">
                       <span className="text-[15px] font-semibold">
                         {h.market?.ticker ?? h.symbol}
                       </span>
