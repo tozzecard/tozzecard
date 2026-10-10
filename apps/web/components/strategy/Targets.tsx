@@ -168,13 +168,8 @@ export function Targets() {
         />
       </Card>
 
-      {/* Sticks above the bottom bar so Save is always in reach on a long list. */}
-      <div className="sticky bottom-[100px] z-30 mt-5 lg:bottom-6">
-        {error ? (
-          <p className="mb-2 rounded-xl bg-white/90 px-3 py-2 text-center text-[13px] text-neg">
-            {error}
-          </p>
-        ) : null}
+      <div className="mt-5">
+        {error ? <p className="mb-2 text-center text-[13px] text-neg">{error}</p> : null}
         <Button
           type="button"
           onClick={() => void save()}
