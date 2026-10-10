@@ -1,0 +1,35 @@
+---
+title: "Trust model"
+description: "What you trust, who you trust, and what limits it."
+icon: "shield-halved"
+---
+
+Tozzecard writes no smart contracts and holds no funds. What you trust is listed here.
+
+## At a glance
+
+| Part | You trust | Limited by |
+|---|---|---|
+| Card key | **Your passkey** and the device or provider that syncs it | Face ID; nothing is stored by us |
+| Stocks | **Binance**, as the Agentic Wallet's MPC custodian, and the token issuers (Binance for bStocks, Ondo) | Your Binance account; the issuers' terms |
+| Where the agent sends money | **Binance's address book check** | Only you can edit it, in the Binance App; Developer Mode must stay off |
+| How much the agent sends | **Binance's daily limit** | You set it in the Binance App |
+| When the agent trades | **Tozzecard's API**, which runs the rules | Dry mode by default; your daily limit; the address book |
+| Payments | **B402** (Binance) to submit the signed transfer | The signature: one amount, one recipient, valid once |
+| Identity | **Didit** and Tozzecard | We keep your name and a hash of your document, nothing else |
+| Prices | Binance's Web3 API, plus our own close reference | Executable quotes before any closed-market sale |
+
+## What Tozzecard can and can't do
+
+| Can | Can't |
+|---|---|
+| Decide when the agent sells, how much, and which stock | Send your money anywhere but your card |
+| Pause the agent, or run it in dry mode | Move USD1 out of your card |
+| See your card address, balance, payments and the name on your ID | See your card key or your passkey |
+| Make a wrong call within your daily limit: a bad sale time, a needless refill | Exceed your daily limit or change your address book |
+
+The worst case from a bug or a compromised server is a sale at a bad moment, capped by your daily limit, with the dollars landing on your own card.
+
+## No audit
+
+The app and the API have had no third-party audit. Every contract Tozzecard uses belongs to Binance, BNB Chain or a token issuer.
