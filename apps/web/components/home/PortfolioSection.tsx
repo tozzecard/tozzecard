@@ -11,8 +11,8 @@ const CARD =
 /** What a non-stock line in the agent wallet is. */
 const TOKEN_NAME: Record<string, string> = {
   BNB: "Pays the agent's swap fees",
-  USDT: "Tether USD",
-  USD1: "World Liberty USD",
+  USDT: "Dollars, not on your card yet",
+  USD1: "Dollars, not on your card yet",
   U: "United Stables",
 };
 
@@ -53,8 +53,8 @@ export function PortfolioSection({ className = "" }: { className?: string }) {
   );
   return (
     <Section
-      title="Portfolio"
-      info="Held in your own Binance Agentic Wallet. The agent sells a little of what grew past your target to top up your card."
+      title="Agent wallet"
+      info="Your Binance Agentic Wallet: the stocks the agent manages. It sells a little of what grew past your target and sends the dollars to your card."
       action={
         data ? (
           <span className="text-[14px] font-semibold tabular-nums text-ink">

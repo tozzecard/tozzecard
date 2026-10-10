@@ -17,7 +17,7 @@ export function BalanceSection({
 }) {
   return (
     <Section
-      title="Balance"
+      title="On your card"
       info="On your card, on BNB Chain. Payments use USD1; Binance pays the network fee, so BNB stays at zero."
       className={className}
     >
@@ -26,7 +26,7 @@ export function BalanceSection({
           <CoinBadge token="USD1" size={32} />
           <div className="min-w-0 flex-1">
             <div className="text-[14px] font-semibold">US dollars</div>
-            <div className="mt-0.5 text-[11.5px] text-muted">USD1</div>
+            <div className="mt-0.5 text-[11.5px] text-muted">USD1 · ready to spend</div>
           </div>
           <div className="text-[14px] font-semibold tabular-nums">{usd(usd1).slice(1)} USD</div>
         </div>
