@@ -1,0 +1,102 @@
+---
+title: "Agent API"
+description: "Read the agent's wallet, decisions and session, and ask what it would do."
+icon: "robot"
+---
+
+These endpoints exist while the server's `AGENT_MODE` is `dry` or `live`. With the agent off they return `404`. They need no token.
+
+## Portfolio
+
+```bash
+curl https://api.tozzecard.xyz/portfolio
+```
+
+```json
+{
+  "card": { "address": "0x3667…804c", "usd1": 0 },
+  "totalUsd": 11.09,
+  "holdings": [
+    { "symbol": "NVDAB", "address": "0x02fc…7436", "balance": "0.0223…", "valueUsd": 5.16,
+      "weight": 0.465, "target": 0.55, "market": { "ticker": "NVDA", "platform": "bstock", "…": "…" } }
+  ]
+}
+```
+
+`weight` is the share of the agent wallet now; `target` is the strategy. `market` is null for non-stock tokens (BNB, USDT, USD1, U).
+
+## Decisions
+
+```bash
+curl "https://api.tozzecard.xyz/agent/decisions?limit=20"
+```
+
+```json
+[
+  {
+    "id": 1,
+    "at": 1791649216109,
+    "action": "hold",
+    "symbol": null,
+    "usd": null,
+    "reason": "Need $10.00 but no sellable position is large enough.",
+    "status": "logged",
+    "txs": [],
+    "error": null
+  }
+]
+```
+
+Newest first. Actions and statuses are explained in [Decisions](/learn/decisions).
+
+## Preview
+
+```bash
+curl "https://api.tozzecard.xyz/agent/preview?at=2026-10-16T19:40:00Z"
+```
+
+```json
+{
+  "at": 1792179600000,
+  "mode": "dry",
+  "decision": {
+    "action": "hold",
+    "reason": "Need $27.52 but no sellable position is large enough.",
+    "needUsd": 27.52,
+    "horizon": 1792416600000
+  }
+}
+```
+
+Runs the same rules for the time you give, against today's balances and prices. Never trades. `horizon` is when the forecast window ends: the next open after the coming close.
+
+## Session
+
+```bash
+curl https://api.tozzecard.xyz/agent/session
+```
+
+```json
+{
+  "connected": true,
+  "devMode": false,
+  "sessionExpireTime": "2026-10-12T16:04:21+00:00",
+  "signInMaxTime": "2026-10-12T16:04:21+00:00"
+}
+```
+
+`devMode: true` means the agent refuses to trade. When the session ends, calls fail with `code: "SESSION_EXPIRED"` or `"NOT_LOGGED_IN"` until someone signs in again.
+
+## Strategy
+
+```bash
+curl https://api.tozzecard.xyz/strategy
+```
+
+```bash
+curl -X PUT https://api.tozzecard.xyz/strategy \
+  -H "authorization: Bearer $TOKEN" -H "content-type: application/json" \
+  -d '{"targets":{"NVDAB":0.7,"MSFTB":0.3},"weeklyEstimateUsd":80}'
+```
+
+`targets` takes symbols or token addresses; the weights must add up to 1. Only the card the agent refills may change it (`403` otherwise).

@@ -1,0 +1,49 @@
+---
+title: "Parameters"
+description: "Every number the agent uses, and where it lives in the code."
+icon: "sliders"
+---
+
+## Refill (`apps/api/src/refill.ts`)
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| `buffer` | `1.2` | Forecast × 1.2 |
+| `floorUsd` | `$10` | Balance the card always keeps |
+| `closeWindowMin` | `30` | Refill in the last 30 minutes before the close |
+| `maxClosedSpread` | `1%` | Most a closed-market sale may be off the close |
+| `MIN_ORDER_USD` | `$5` | Binance's minimum market order |
+
+## Forecast (`apps/api/src/forecast.ts`)
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| `lookbackDays` | `28` | Days of history averaged |
+| Buckets | weekday, weekend | Averaged separately |
+| `WEEKLY_ESTIMATE_USD` | `70` (env) | Used for days before the card existed, until the card saves its own |
+| `TZ_OFFSET_MIN` | `420` (env) | The cardholder's timezone, in minutes from UTC (UTC+7) |
+
+## Scheduler (`apps/api/src/scheduler.ts`)
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| Tick | every minute (`MARKET_POLL_MS=60000`) | How often it decides |
+| `COOLDOWN_MS` | 5 min | Pause after an executed refill |
+| `UNKNOWN_BLOCKS_MS` | 30 min | Pause after a swap with an unknown outcome |
+| `DRIFT` | `5%` | Rebalance threshold |
+| Unsellable | `UNSUPPORTED`, `ASSET_PAUSED`, `ASSET_LIMITED`, `MARKET_PAUSED` | Token states the agent never sells |
+
+## Market (`apps/api/src/market.ts`, `calendar.ts`)
+
+| Parameter | Value |
+|---|---|
+| Regular session | Mon–Fri, 09:30–16:00 New York, minus 2026 holidays |
+| Benchmark for the market clock | `SPYon` |
+
+## Cards (`apps/api/src/card.ts`)
+
+| Parameter | Value |
+|---|---|
+| Sign-in challenge | valid 5 minutes |
+| Session token | valid 30 days |
+| Card expiry | 3 years after issue |

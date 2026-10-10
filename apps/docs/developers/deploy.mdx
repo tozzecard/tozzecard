@@ -1,0 +1,43 @@
+---
+title: "Deploy"
+description: "Where each part runs, and how to run the API yourself."
+icon: "server"
+---
+
+| Service | Where | URL |
+|---|---|---|
+| `apps/web` | Vercel, deploys on every merge to `main` | https://app.tozzecard.xyz |
+| `apps/landing` | Vercel, deploys on every merge to `main` | https://tozzecard.xyz |
+| `apps/api` | VPS, Docker Compose, SQLite and the `baw` session in `./data` | https://api.tozzecard.xyz |
+| `apps/docs` | Mintlify, content directory `apps/docs` | https://docs.tozzecard.xyz |
+
+## The API
+
+The API polls Binance every minute and keeps the last regular-session price as the close reference, so it has to run all the time. The VPS must sit outside the US, UK, Canada and the Netherlands.
+
+```bash
+git clone https://github.com/tozzecard/tozzecard && cd tozzecard
+cp .env.example .env    # fill in keys; BINANCE_INSTANCE_ID=$(openssl rand -hex 32)
+docker compose up -d --build
+docker compose exec api bun packages/agent/scripts/signin.ts   # confirm in the Binance App
+
+# update
+git pull && docker compose up -d --build
+```
+
+The container listens on `127.0.0.1:8787` only; put a reverse proxy (we use Caddy) in front for HTTPS.
+
+<Warning>
+Back up `./data`. It holds the close references and the Agentic Wallet session. Without `BINANCE_INSTANCE_ID`, `baw` ties the session to the container's MAC address and a new container is signed out.
+</Warning>
+
+Secrets live in `.env` on the server, never in the repository.
+
+## The docs
+
+In the Mintlify dashboard, connect the GitHub repository and point it at `apps/docs` (the folder with `docs.json`). Then add the custom domain `docs.tozzecard.xyz`:
+
+1. Add the two verification `TXT` records the dashboard shows, and wait for both to turn green.
+2. Then add `CNAME docs → cname.mintlify.builders`.
+
+Changing the `CNAME` before the `TXT` records verify can break HTTPS until the certificate is issued.

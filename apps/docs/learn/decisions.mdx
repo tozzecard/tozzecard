@@ -1,0 +1,39 @@
+---
+title: "Decisions"
+description: "Every choice the agent makes, with its reason."
+icon: "list-timeline"
+---
+
+Every decision is saved with its time, action, stock, amount, reason, status and transaction hashes. You see them in **Strategy → Activity**, and developers can read them from [`GET /agent/decisions`](/developers/agent-api).
+
+## Actions
+
+| Action | Means |
+|---|---|
+| `none` | The card has enough. Nothing to do |
+| `refill` | Sell a stock and send USD1 to the card |
+| `hold` | The card needs money, but selling now would cost you, or nothing can be sold |
+| `rebalance` | Bring the stocks back to your split |
+
+## Statuses
+
+| Status | Means |
+|---|---|
+| `logged` | A decision with no trade |
+| `dry-run` | A trade it would have made, in dry mode |
+| `executed` | Traded and sent. The transactions are linked |
+| `failed` | Something went wrong. The error is saved |
+| `unknown` | A swap was still pending at the timeout. No new trades for 30 minutes |
+| `blocked` | The Agentic Wallet needs a sign-in in the Binance App |
+
+## A real example
+
+From the live API on 10 October 2026, in dry mode, with about $11 in the agent wallet and no single position worth $10:
+
+> Need $10.00 but no sellable position is large enough.
+
+Other reasons the agent writes look like *"Selling $12.00 of NVDAB (most overweight) while the market is open: market closes soon, and you usually spend $14.40 until Mon 9:30 AM NY."* The numbers come from your card and your stocks at that moment.
+
+## Preview
+
+[`GET /agent/preview?at=`](/developers/agent-api) runs the same rules for any time you pick, such as Friday 15:40 in New York, and never trades. The app's **Strategy → Preview** tab uses it.

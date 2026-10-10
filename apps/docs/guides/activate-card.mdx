@@ -1,0 +1,36 @@
+---
+title: "Activate your card"
+description: "An ID photo and a selfie. About a minute."
+icon: "id-card"
+---
+
+Your card's address works from the moment you create it. Activation gives the card its number, expiry and your name, taken from your verified ID.
+
+<Steps>
+  <Step title="Tap Activate your card on Home">
+    The app opens Didit, our identity check provider.
+  </Step>
+  <Step title="Take a photo of your ID, then a selfie">
+    Follow Didit's prompts. When it's done, you're sent back to the app.
+  </Step>
+  <Step title="Wait for the result">
+    Home shows *Verifying your ID* and updates by itself. It can take a few minutes.
+  </Step>
+</Steps>
+
+## Results
+
+| You see | Means | What to do |
+|---|---|---|
+| Your card with your name | Approved | Nothing. History shows *ID verified* |
+| *Verifying your ID* | Didit is still checking | Wait; the screen updates by itself |
+| *Verification failed* | The check didn't pass | Try again with a clear photo of your ID |
+| *This ID already has a card* | One person, one card | Sign in to the card you already made |
+
+## What we keep
+
+Didit tells our API the result directly. We keep the name on the card and a fingerprint (a hash) of your document, so the same ID can't activate a second card. The app never sends us your document.
+
+<Note>
+The card number and CVV identify the card in the app only. They are not a Visa or Mastercard number, and no shop accepts them. Payments are signed with your passkey.
+</Note>

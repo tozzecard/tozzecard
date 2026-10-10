@@ -1,0 +1,32 @@
+---
+title: "FAQ"
+description: "Short answers to common questions."
+icon: "circle-question"
+---
+
+<AccordionGroup>
+  <Accordion title="Is my card address the same as my Binance Wallet address?">
+    No. Your card is a separate wallet made from your passkey. Your Binance Wallet is a good place to [top up from](/guides/top-up): send USD1 on BNB Chain to the card address.
+  </Accordion>
+  <Accordion title="Do I need a seed phrase?">
+    No. The card's key is made again from your passkey each time you sign in, and nothing is stored. Your passkey is the backup, so keep it synced to iCloud Keychain or Google Password Manager.
+  </Accordion>
+  <Accordion title="Can I open my card on another phone or computer?">
+    Yes, if your passkey syncs there. See [Use another device](/guides/other-devices).
+  </Accordion>
+  <Accordion title="Do I need BNB?">
+    Not on the card. B402 pays the network fee for card payments. The agent wallet needs a little BNB for its own swaps.
+  </Accordion>
+  <Accordion title="Can Tozzecard take my money?">
+    No. We hold no keys and no funds. The card's key comes from your passkey, and the agent wallet is your own Binance Agentic Wallet, which can only send to your card. See [Trust model](/learn/trust-model).
+  </Accordion>
+  <Accordion title="Why did the agent hold instead of refilling?">
+    Usually because no single stock position is large enough for the refill, the trade would be under Binance's $5 minimum, or the market is closed and the price is too far from Friday's close. Every decision comes with its reason in Strategy → Activity.
+  </Accordion>
+  <Accordion title="What are the card number and CVV for?">
+    They identify your card in the app. They are not a Visa or Mastercard number, and no shop accepts them. Payments are signed with your passkey.
+  </Accordion>
+  <Accordion title="Is it audited?">
+    Tozzecard has no smart contracts of its own. It uses contracts from Binance, BNB Chain and the token issuers. The app and API have not had a third-party audit.
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,47 @@
+---
+title: "Use another device"
+description: "Open the same card on your iPhone, iPad, Mac or Android phone."
+icon: "mobile-screen"
+---
+
+The card's key is made from your passkey every time you sign in, and nothing else is stored. So any device that has your passkey opens the same card, with the same address.
+
+## Make sure the passkey syncs
+
+<Tabs>
+  <Tab title="iCloud Keychain">
+    1. Sign in to the same Apple ID on both devices.
+    2. Turn on iCloud Keychain on both: **Settings → [your name] → iCloud → Passwords & Keychain**.
+    3. On the device where you made the card, look for *tozzecard* in the **Passwords** app. If it is there, it syncs.
+  </Tab>
+  <Tab title="Google Password Manager">
+    1. Use Chrome signed in to the same Google account on both devices.
+    2. On an iPhone, you can also turn on Google Password Manager under **Settings → General → AutoFill & Passwords**.
+  </Tab>
+  <Tab title="1Password">
+    Install 1Password on the new device and sign in to the same account.
+  </Tab>
+</Tabs>
+
+## Open the card
+
+<Steps>
+  <Step title="Go to app.tozzecard.xyz">
+    On the new device.
+  </Step>
+  <Step title="Tap I already have a card">
+    Pick your Tozzecard passkey and confirm.
+  </Step>
+  <Step title="Check the address">
+    **Account → Details → Card address** should match the one on your first device.
+  </Step>
+</Steps>
+
+<Warning>
+If the passkey doesn't show up, **don't tap Create your card**. That makes a new passkey and a new card with a different address. Fix the sync first.
+</Warning>
+
+## Things to know
+
+- Passkeys belong to a website. A passkey made on a test address (such as `localhost`) does not work on app.tozzecard.xyz.
+- If you lose every device that has the passkey, and it wasn't synced, the card can't be opened again. There is no recovery yet.

@@ -1,0 +1,70 @@
+---
+title: "Run locally"
+description: "The app, the API and the docs on your machine."
+icon: "terminal"
+---
+
+## Requirements
+
+- [Bun](https://bun.sh)
+- Node.js on your `PATH` (the `baw` CLI runs under Node)
+- A [Binance Web3 API key](https://web3.binance.com/en/dev-portal), for market data
+- Outside the US, UK, Canada and the Netherlands: the Binance Web3 API refuses that traffic, and VPNs or proxies (error `40302`)
+
+## Start
+
+```bash
+git clone https://github.com/tozzecard/tozzecard && cd tozzecard
+bun install
+cp .env.example .env   # fill in BINANCE_WEB3_API_KEY and BINANCE_WEB3_API_SECRET
+bun dev
+```
+
+| Service | URL |
+|---|---|
+| App | http://localhost:3000 |
+| Landing | http://localhost:3001 |
+| API | http://localhost:8787, Swagger UI at `/docs` |
+
+Set `NEXT_PUBLIC_API_URL=http://localhost:8787` to point the app at your API, or leave the default to use `https://api.tozzecard.xyz`, whose CORS allows `localhost:3000`.
+
+<Note>
+Passkeys belong to the hostname. A card made on `localhost` doesn't exist on app.tozzecard.xyz, and the other way round.
+</Note>
+
+## Environment
+
+| Variable | For |
+|---|---|
+| `BINANCE_WEB3_API_KEY`, `BINANCE_WEB3_API_SECRET` | Market data, quotes, B402 |
+| `BSC_RPC_URL` | Card balances (default `https://bsc-dataseed.bnbchain.org`) |
+| `CARD_SECRET` | Derives card numbers and hashes ID documents. Changing it changes every card number |
+| `DIDIT_API_KEY`, `DIDIT_WORKFLOW_ID`, `DIDIT_WEBHOOK_SECRET` | Identity check |
+| `MERCHANT_PAY_TO` | Demo merchant; must equal the `payTo` set in the B402 dev portal. Empty turns `/merchant/*` off |
+| `AGENT_MODE` | `off` (default), `dry` (decide and log), `live` (trades real money) |
+| `CARD_ADDRESS` | The card the agent refills; also the only address in its address book |
+| `AGENT_TARGETS`, `WEEKLY_ESTIMATE_USD` | Default strategy until the card saves one |
+| `BINANCE_INSTANCE_ID` | Server only: a stable key for the `baw` session file |
+
+## The agent
+
+```bash
+bun packages/agent/scripts/signin.ts          # prints a QR link; confirm in the Binance App
+bun packages/agent/scripts/demo-allowlist.ts  # expects "Blocked by Binance (351703)"
+```
+
+One session per wallet: signing in on one machine signs out the others. In Indonesia the ISP blocks `*.binance.com` DNS; use WARP or another resolver.
+
+## Checks
+
+```bash
+bun run typecheck
+bun run lint
+bun test
+```
+
+## Docs
+
+```bash
+cd apps/docs && npx mint dev
+```

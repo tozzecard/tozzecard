@@ -1,0 +1,45 @@
+---
+title: "How refills work"
+description: "Forecast what you'll spend, and sell before the market closes."
+icon: "rotate"
+---
+
+Every minute, the API asks one question: **will the card cover what you usually spend until the agent can next sell at a real price?**
+
+## How much you'll need
+
+The forecast is a plain average, no machine learning:
+
+- It looks at your card payments over the last **28 days**, split into **weekdays** and **weekends**, in your timezone.
+- Days before your card existed count at the weekly spend you set in Strategy.
+- It adds up the expected spending from now until the **next market open after the coming close**, then adds a **20% buffer**.
+
+The card also keeps a **floor of $10**, whatever the forecast says.
+
+## When it sells
+
+| Market | Card | What happens |
+|---|---|---|
+| Open | Enough | Nothing |
+| Open | Short | Waits for the **last 30 minutes before the close**, then sells |
+| Open | Below $10 | Sells now |
+| Closed | Above $10 | Waits for the open |
+| Closed | Below $10 | Sells only what gets the card back to $10, and only if the price is within **1%** of Friday's close. Otherwise it holds |
+
+Each trade is at least **$5**, Binance's minimum.
+
+## What it sells
+
+The stock that is **furthest above its target**. That way a refill is also a rebalance. Ties go to the stock closest to its close price. Paused, limited or unsupported tokens are skipped.
+
+A bStock is sold straight for USD1. An Ondo stock is sold for USDT, then USDT for USD1. The USD1 is sent to your card.
+
+## Safety rules
+
+- **Dry mode** logs what it would do and never trades. Live mode has to be switched on.
+- After a refill, it waits **5 minutes** before the next.
+- If a swap is still pending after the timeout, its outcome is **unknown**, and no new trade starts for **30 minutes** until someone checks.
+- With the market closed, a sale must pass an executable quote, not just the on-chain price.
+- A signed-out Agentic Wallet is **blocked**, not retried.
+
+All of these are in [Parameters](/resources/parameters).

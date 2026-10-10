@@ -1,0 +1,25 @@
+---
+title: "Status"
+description: "What is live today, and what is not yet."
+icon: "signal"
+---
+
+As of **11 October 2026**.
+
+| Part | Status |
+|---|---|
+| App ([app.tozzecard.xyz](https://app.tozzecard.xyz)) | Live on BNB Chain mainnet |
+| Card: create with a passkey, sign in again | Live |
+| Card activation with Didit | Live |
+| Card balance and statement | Live |
+| Strategy: targets and weekly spend | Live |
+| Agentic Wallet connected to the server | Live. The session lasts up to 48 hours and needs a confirmation in the Binance App to renew |
+| Agent decisions | Running in **dry** mode: it decides and logs, but does not trade yet |
+| Preview ("what would the agent do at…") | Live, never trades |
+| Paying a merchant through B402 | Built and tested. The demo merchant waits for Binance to approve our B402 application, so it is off |
+
+## One card per agent
+
+The hosted agent refills one card: the one in its Agentic Wallet's address book. Anyone can create and activate a card, top it up and use the app. The **Card | Agent** switch on Home appears only for the card the agent refills.
+
+This comes from how the Agentic Wallet works today: one wallet per Binance account, driven by one `baw` CLI session, with no HTTP API. See [Agent wallet](/learn/agent-wallet).
