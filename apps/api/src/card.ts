@@ -1,10 +1,12 @@
-// Cards: sign-in with the card's own key, and the card face (number, expiry, CVV) the app shows.
-// The card is an EOA whose key lives in the browser behind a passkey (plan §3.1); we never see
-// the key. Signing in = signing a one-time message with it, which proves the browser holds it.
+// Cards: sign-in with the card's own key, the identity check that issues the card, and the card
+// face (number, expiry, CVV) the app shows. The card is an EOA whose key lives in the browser
+// behind a passkey (plan §3.1); we never see the key. Signing in = signing a one-time message
+// with it, which proves the browser holds it. The card is issued once Didit approves the holder
+// (kyc.ts), with the holder name from the document.
 // ponytail: the number and CVV are display identifiers, not a payment-network PAN. Payments are
 // passkey-signed B402 authorizations; nothing accepts these digits as a credential.
 import type { Database } from "bun:sqlite";
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { getAddress, isAddress, verifyMessage } from "viem";
 
 const CHALLENGE_TTL_MS = 5 * 60_000;
@@ -12,6 +14,8 @@ const SESSION_TTL_MS = 30 * 86_400_000;
 const EXPIRY_YEARS = 3;
 // Major industry identifier 9 (national use): no payment network issues numbers from it.
 const NUMBER_PREFIX = "9406";
+
+export type Kyc = "none" | "pending" | "approved" | "declined" | "duplicate";
 
 export interface Card {
   address: string;
@@ -23,12 +27,24 @@ export interface Card {
   createdAt: number;
 }
 
+export interface Account {
+  address: string;
+  kyc: Kyc;
+  /** Null until the identity check is approved. */
+  card: Card | null;
+}
+
+/** What the approved identity document says (from Didit's decision). */
+export interface IdentityDocument {
+  fullName: string;
+  issuingState: string;
+  documentType: string;
+  documentNumber: string;
+}
+
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 const hex = (bytes: number) =>
   Buffer.from(crypto.getRandomValues(new Uint8Array(bytes))).toString("hex");
-// ponytail: byte % 10 is slightly biased; irrelevant for display digits.
-const digits = (n: number) =>
-  [...crypto.getRandomValues(new Uint8Array(n))].map((b) => b % 10).join("");
 
 /** Luhn check digit for `payload`, so the number passes the same check a real card does. */
 export function luhnDigit(payload: string): string {
@@ -46,45 +62,70 @@ export function cleanHolder(name: unknown): string | null {
   return /^[A-Z][A-Z .'-]{0,25}$/.test(s) ? s : null;
 }
 
-export function createCards(db: Database) {
-  db.run(`CREATE TABLE IF NOT EXISTS cards (
-    address TEXT PRIMARY KEY, holder TEXT NOT NULL, number TEXT NOT NULL UNIQUE,
-    expiry TEXT NOT NULL, cvv TEXT NOT NULL, created_at INTEGER NOT NULL)`);
+/** "Carmen Española Española" → "CARMEN ESPANOLA ESPANOLA": accents dropped, whole words up to 26. */
+export function holderFromDocument(fullName: string): string {
+  const words = fullName
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toUpperCase()
+    .replace(/[^A-Z .'-]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  let s = "";
+  for (const w of words) {
+    const next = s ? `${s} ${w}` : w;
+    if (next.length > 26) break;
+    s = next;
+  }
+  return cleanHolder(s) ?? "CARDHOLDER";
+}
+
+/**
+ * `secret` (CARD_SECRET) derives each card's number and CVV and hashes identity documents, so
+ * nothing card-secret sits in the DB and a stored document hash can't be brute-forced back.
+ * Changing it changes every card number.
+ */
+export function createCards(db: Database, secret: string) {
+  if (secret.length < 32) throw new Error("CARD_SECRET must be at least 32 characters");
+  db.run(`CREATE TABLE IF NOT EXISTS accounts (
+    address TEXT PRIMARY KEY, kyc TEXT NOT NULL DEFAULT 'none', kyc_session TEXT UNIQUE,
+    identity TEXT UNIQUE, holder TEXT, issued_at INTEGER)`);
   db.run(`CREATE TABLE IF NOT EXISTS challenges (
     message TEXT PRIMARY KEY, address TEXT NOT NULL, expires_at INTEGER NOT NULL)`);
   db.run(`CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY, address TEXT NOT NULL, expires_at INTEGER NOT NULL)`);
 
-  const read = db.prepare<Record<string, string | number>, [string]>(
-    "SELECT * FROM cards WHERE address = ?",
-  );
-  const toCard = (r: Record<string, string | number>): Card => ({
-    address: getAddress(String(r.address)),
-    holder: String(r.holder),
-    number: String(r.number),
-    expiry: String(r.expiry),
-    cvv: String(r.cvv),
-    createdAt: Number(r.created_at),
-  });
-  const get = (address: string) => {
-    const r = read.get(address.toLowerCase());
-    return r ? toCard(r) : null;
-  };
+  const hmac = (label: string, s: string) =>
+    createHmac("sha256", secret).update(`${label}:${s}`).digest();
+  const digitsOf = (label: string, address: string, n: number) =>
+    (BigInt(`0x${hmac(label, address).toString("hex")}`) % 10n ** BigInt(n))
+      .toString()
+      .padStart(n, "0");
 
-  function issue(address: string, holder: string, now: number): Card {
-    const body = NUMBER_PREFIX + digits(11);
-    const exp = new Date(now);
-    const expiry = `${String(exp.getUTCMonth() + 1).padStart(2, "0")}/${String((exp.getUTCFullYear() + EXPIRY_YEARS) % 100).padStart(2, "0")}`;
-    // ponytail: a number collision (1 in 10^11) fails the insert; the client just signs in again.
-    db.run("INSERT INTO cards VALUES (?, ?, ?, ?, ?, ?)", [
-      address.toLowerCase(),
+  function face(address: string, holder: string, issuedAt: number): Card {
+    // ponytail: two cards share a number 1 in 10^11; display only, so no uniqueness check.
+    const body = NUMBER_PREFIX + digitsOf("number", address, 11);
+    const d = new Date(issuedAt);
+    return {
+      address: getAddress(address),
       holder,
-      body + luhnDigit(body),
-      expiry,
-      digits(3),
-      now,
-    ]);
-    return get(address) as Card;
+      number: body + luhnDigit(body),
+      expiry: `${String(d.getUTCMonth() + 1).padStart(2, "0")}/${String((d.getUTCFullYear() + EXPIRY_YEARS) % 100).padStart(2, "0")}`,
+      cvv: digitsOf("cvv", address, 3),
+      createdAt: issuedAt,
+    };
+  }
+
+  type Row = { address: string; kyc: Kyc; holder: string | null; issued_at: number | null };
+  const read = db.prepare<Row, [string]>("SELECT * FROM accounts WHERE address = ?");
+  function get(address: string): Account | null {
+    const r = read.get(address.toLowerCase());
+    if (!r) return null;
+    const card =
+      r.kyc === "approved" && r.holder && r.issued_at
+        ? face(r.address, r.holder, r.issued_at)
+        : null;
+    return { address: getAddress(r.address), kyc: r.kyc, card };
   }
 
   /** Step 1: a one-time message for the card key to sign. */
@@ -101,15 +142,14 @@ export function createCards(db: Database) {
   }
 
   /**
-   * Step 2: the signed message → a bearer token. The first sign-in issues the card.
-   * Null when the message is unknown, used, expired, or not signed by the card key.
+   * Step 2: the signed message → a bearer token. Null when the message is unknown, used,
+   * expired, or not signed by the card key. The card itself comes after the identity check.
    */
   async function signIn(
     message: string,
     signature: string,
-    holder: string | null,
     now = Date.now(),
-  ): Promise<{ token: string; card: Card; created: boolean } | null> {
+  ): Promise<({ token: string } & Account) | null> {
     const row = db
       .query<{ address: string; expires_at: number }, [string]>(
         "DELETE FROM challenges WHERE message = ? RETURNING address, expires_at",
@@ -123,8 +163,7 @@ export function createCards(db: Database) {
     }).catch(() => false);
     if (!ok) return null;
 
-    const existing = get(row.address);
-    const card = existing ?? issue(row.address, holder ?? "CARDHOLDER", now);
+    db.run("INSERT OR IGNORE INTO accounts (address) VALUES (?)", [row.address]);
     const token = hex(32);
     db.run("DELETE FROM sessions WHERE expires_at < ?", [now]);
     db.run("INSERT INTO sessions VALUES (?, ?, ?)", [
@@ -132,11 +171,11 @@ export function createCards(db: Database) {
       row.address,
       now + SESSION_TTL_MS,
     ]);
-    return { token, card, created: !existing };
+    return { token, ...(get(row.address) as Account) };
   }
 
-  /** `Authorization: Bearer <token>` → the signed-in card, or null. */
-  function auth(header: string | undefined, now = Date.now()): Card | null {
+  /** `Authorization: Bearer <token>` → the signed-in account, or null. */
+  function auth(header: string | undefined, now = Date.now()): Account | null {
     const token = header?.match(/^Bearer ([0-9a-f]{64})$/)?.[1];
     if (!token) return null;
     const s = db
@@ -147,17 +186,55 @@ export function createCards(db: Database) {
     return s && s.expires_at > now ? get(s.address) : null;
   }
 
-  function rename(address: string, holder: string): Card {
-    db.run("UPDATE cards SET holder = ? WHERE address = ?", [holder, address.toLowerCase()]);
-    return get(address) as Card;
-  }
-
   const signOut = (header: string | undefined) => {
     const token = header?.match(/^Bearer ([0-9a-f]{64})$/)?.[1];
     if (token) db.run("DELETE FROM sessions WHERE token_hash = ?", [sha256(token)]);
   };
 
-  return { challenge, signIn, auth, signOut, get, rename };
+  /** A Didit session was opened for this account. An approved card never goes back. */
+  function kycStarted(address: string, sessionId: string) {
+    db.run(
+      "UPDATE accounts SET kyc = 'pending', kyc_session = ? WHERE address = ? AND kyc != 'approved'",
+      [sessionId, address.toLowerCase()],
+    );
+  }
+
+  /** The account a Didit session belongs to (only its latest session counts). */
+  const bySession = (sessionId: string) =>
+    db
+      .query<{ address: string }, [string]>("SELECT address FROM accounts WHERE kyc_session = ?")
+      .get(sessionId)?.address ?? null;
+
+  /** An approved card never goes back. */
+  const setKyc = (address: string, kyc: Kyc) =>
+    db.run("UPDATE accounts SET kyc = ? WHERE address = ? AND kyc != 'approved'", [
+      kyc,
+      address.toLowerCase(),
+    ]);
+
+  /** Approved by Didit → issue the card, unless this document already holds one. */
+  function approve(address: string, doc: IdentityDocument, now = Date.now()): Kyc {
+    const a = address.toLowerCase();
+    const identity = hmac(
+      "identity",
+      [doc.issuingState, doc.documentType, doc.documentNumber]
+        .map((s) => s.trim().toUpperCase())
+        .join("|"),
+    ).toString("hex");
+    try {
+      // UNIQUE(identity) refuses a second account for the same document, races included.
+      db.run(
+        "UPDATE accounts SET kyc = 'approved', identity = ?, holder = ?, issued_at = COALESCE(issued_at, ?) WHERE address = ?",
+        [identity, holderFromDocument(doc.fullName), now, a],
+      );
+    } catch (e) {
+      if (!String(e).includes("UNIQUE")) throw e;
+      setKyc(a, "duplicate");
+    }
+    return (get(a) as Account).kyc;
+  }
+
+  return { challenge, signIn, auth, signOut, get, kycStarted, bySession, setKyc, approve };
 }
 
 export type Cards = ReturnType<typeof createCards>;

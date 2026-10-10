@@ -29,8 +29,10 @@ export const openapi = {
       "**Sign in with the card key** (the EOA the browser unlocks with the passkey):",
       "1. `POST /auth/challenge {address}` → `{message}`",
       "2. `account.signMessage({ message })` (viem)",
-      "3. `POST /auth/verify {message, signature, holder?}` → `{token, card}`. The first sign-in issues the card (201).",
-      "4. Send `Authorization: Bearer <token>` on `/me*` and `PUT /strategy`. Tokens last 30 days.",
+      "3. `POST /auth/verify {message, signature}` → `{token, address, kyc, card}`.",
+      "4. Send `Authorization: Bearer <token>` on `/me*`, `/kyc/session` and `PUT /strategy`. Tokens last 30 days.",
+      "",
+      "**Activating the card** (identity check with Didit): while `kyc` is not `approved`, `card` is null. `POST /kyc/session {returnUrl?}` → `{url}`; open it; Didit sends the user back to `returnUrl`; poll `GET /me` while `kyc` is `pending`. On approval the card is issued with the holder name from the document.",
       "",
       "**Paying a merchant order** (B402 / x402 v2): `GET /merchant/orders/{id}/pay` → 402 with `accepts[0]`; build and sign with `@tozzecard/binance/eip3009` (`transferAuthorization`, `signTypedData`, `paymentHeader`); `POST` the same URL with header `PAYMENT-SIGNATURE`. The receipt comes back in `PAYMENT-RESPONSE`.",
       "",
@@ -59,20 +61,27 @@ export const openapi = {
       Card: {
         type: "object",
         description:
-          "Card face. number and cvv identify the card in the app only (prefix 9406, Luhn-valid, not a payment-network number); payments are passkey-signed B402 authorizations.",
+          "Card face, issued after the identity check. holder is the name on the verified document. number and cvv are derived from the card address (same card, same digits) and identify it in the app only (prefix 9406, Luhn-valid, not a payment-network number); payments are passkey-signed B402 authorizations.",
         properties: {
           address: { ...str, example: "0x0cA6De9ce4843846210Dec81C3f6032773376EAB" },
           holder: { ...str, example: "KIEL TAME" },
           number: { ...str, example: "9406472632795151" },
           expiry: { ...str, description: "MM/YY", example: "10/29" },
           cvv: { ...str, example: "775" },
-          createdAt: { ...num, description: "ms since epoch" },
+          createdAt: { ...num, description: "issued at, ms since epoch" },
         },
+      },
+      Kyc: {
+        enum: ["none", "pending", "approved", "declined", "duplicate"],
+        description:
+          "Identity check. none: not started (or abandoned/expired, start again); pending: in Didit or in review; declined: refused (may retry); duplicate: this document already holds another card.",
       },
       Me: {
         type: "object",
         properties: {
-          card: ref("Card"),
+          address: str,
+          kyc: ref("Kyc"),
+          card: { ...nullable(ref("Card")), description: "null until kyc is approved" },
           balance: {
             type: "object",
             properties: {
@@ -293,7 +302,7 @@ export const openapi = {
     "/auth/verify": {
       post: {
         tags: ["Card"],
-        summary: "Signed message → bearer token; the first sign-in issues the card",
+        summary: "Signed message → bearer token",
         requestBody: body(
           {
             type: "object",
@@ -301,29 +310,20 @@ export const openapi = {
             properties: {
               message: { ...str, description: "exactly as /auth/challenge returned it" },
               signature: { ...str, description: "EIP-191 personal_sign by the card key" },
-              holder: {
-                ...str,
-                description: "name on a new card; letters, spaces, . ' - up to 26 (uppercased)",
-              },
             },
           },
-          { message: "Sign in to Tozzecard\n...", signature: "0x...", holder: "Kiel Tame" },
+          { message: "Sign in to Tozzecard\n...", signature: "0x..." },
         ),
         responses: {
-          200: json(
-            {
-              type: "object",
-              properties: { token: str, card: ref("Card"), created: { const: false } },
+          200: json({
+            type: "object",
+            properties: {
+              token: str,
+              address: str,
+              kyc: ref("Kyc"),
+              card: { ...nullable(ref("Card")), description: "null until kyc is approved" },
             },
-            "Signed in to an existing card",
-          ),
-          201: json(
-            {
-              type: "object",
-              properties: { token: str, card: ref("Card"), created: { const: true } },
-            },
-            "Card issued",
-          ),
+          }),
           400: err("message and signature are required"),
           401: err("Unknown, used or expired message, or not signed by the card key"),
         },
@@ -340,22 +340,52 @@ export const openapi = {
     "/me": {
       get: {
         tags: ["Card"],
-        summary: "Card face, balance, agent link",
+        summary: "Identity check state, card face (null until approved), balance, agent link",
         security: bearer,
         responses: { 200: json(ref("Me")), 401: err("Sign in first (code UNAUTHORIZED)") },
       },
-      patch: {
+    },
+    "/kyc/session": {
+      post: {
         tags: ["Card"],
-        summary: "Rename the card holder",
+        summary: "Start the identity check: a Didit session → { url } to open",
         security: bearer,
-        requestBody: body(
-          { type: "object", required: ["holder"], properties: { holder: str } },
-          { holder: "Axel" },
-        ),
+        requestBody: {
+          required: false,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  returnUrl: {
+                    ...str,
+                    description:
+                      "where Didit sends the user back; must be on a WEB_ORIGIN origin, else https://app.tozzecard.xyz/",
+                  },
+                },
+              },
+              example: { returnUrl: "https://app.tozzecard.xyz/" },
+            },
+          },
+        },
         responses: {
-          200: json({ type: "object", properties: { card: ref("Card") } }),
-          400: err("Invalid name"),
+          200: json({ type: "object", properties: { url: str } }),
           401: err("Sign in first"),
+          409: err("Card already issued"),
+          503: err("Identity check not configured on this server"),
+        },
+      },
+    },
+    "/kyc/didit": {
+      post: {
+        tags: ["Card"],
+        summary: "Didit webhook (server to server, not for the app)",
+        description:
+          "Checks X-Signature (HMAC-SHA256 of the raw body with the webhook secret) and X-Timestamp (±5 min). On Approved, reads the document from Didit's decision endpoint and issues the card.",
+        responses: {
+          200: json({ type: "object", properties: { ok: { type: "boolean" }, kyc: ref("Kyc") } }),
+          401: err("Bad signature"),
+          503: err("Identity check not configured"),
         },
       },
     },
