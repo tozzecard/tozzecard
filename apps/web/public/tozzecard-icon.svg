@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Tozzecard</title>
   <rect width="512" height="512" rx="112" fill="#0B0B0F"/>
   <g fill="#F0B90B" transform="translate(81 140)">
     <rect x="0" y="0" width="292" height="70" rx="35"/>
