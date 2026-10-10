@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   // Transparent mark: dark on a light tab bar, white on a dark one, where the dark mark vanishes.
   icons: {
     icon: [
-      { url: "/logo.png", media: "(prefers-color-scheme: light)" },
-      { url: "/logo-white.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/logo.svg", media: "(prefers-color-scheme: light)" },
+      { url: "/logo-white.svg", media: "(prefers-color-scheme: dark)" },
     ],
   },
 };

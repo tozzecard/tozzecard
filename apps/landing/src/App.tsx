@@ -95,14 +95,11 @@ const PILLARS: { title: string; blurb: string; src: string }[] = [
 ];
 
 /**
- * The Tozzecard mark with a transparent background, cut from
- * `logo.jpeg`. The header follows its own text colour: the white mark
- * over the photographic hero, the dark one once the header turns dark. The
- * JPEG, a mark on a white square, stays the favicon, where a transparent dark
- * mark would vanish on a dark tab bar.
+ * The Tozzecard mark: a card with a T cut out. The header follows its own text colour: the white
+ * mark over the photographic hero, the dark one once the header turns dark.
  */
-const LOGO_SRC = "/logo.png";
-const LOGO_WHITE_SRC = "/logo-white.png";
+const LOGO_SRC = "/logo.svg";
+const LOGO_WHITE_SRC = "/logo-white.svg";
 
 const STAGGER_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 

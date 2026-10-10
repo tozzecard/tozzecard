@@ -14,10 +14,12 @@ bun run typecheck
 ## Where this page stands
 
 Copied whole from the frontend owner's earlier card project on 10 Oct 2026; layout, motion and
-section structure carry over. **The copy is not Tozzecard's yet**: it still talks about a credit
-card, collateral and another chain. Rewrite it around `docs/plan.md` §1 and §3 (agent wallet holds
-stocks, card holds USD1, refill while the market is open, address book). The logo files in
-`public/logo*` are placeholders from that project. The testimonials are placeholders.
+section structure carry over. The copy follows `docs/plan.md` §1 and §3: the agent wallet holds
+stocks, the card holds USD1, refills happen while the market is open, the address book is the lock.
+The figures in `CounterSection.tsx` are the settings in `apps/api` (`refill.ts` DEFAULTS,
+`scheduler.ts` DRIFT); change them together. `public/logo*.svg` is a stand-in mark. The
+testimonials and the "Early access 5/5" badge are placeholders. The images and videos are the
+earlier project's and carry no brand.
 
 ## Shape of the page
 
