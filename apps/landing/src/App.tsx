@@ -593,14 +593,14 @@ function TopUpSection() {
                 letterSpacing: "-0.03em",
               }}
             >
-              Filled before
+              Topped up
               <br />
-              you need it.
+              before you need it.
             </h2>
           </Reveal>
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              It learns what you spend and sells what grew past your target.
+              It learns what you spend and sells a little of what grew the most.
             </p>
           </Reveal>
         </div>
@@ -657,7 +657,7 @@ function SpendSection() {
 
           <Reveal delay={0.08}>
             <p className="mt-[30px] text-[15px] leading-relaxed text-[#18161B]/60 sm:text-base">
-              Confirm with Face ID. Paid in dollars, no fees.
+              Confirm with Face ID. No BNB needed.
             </p>
           </Reveal>
         </div>

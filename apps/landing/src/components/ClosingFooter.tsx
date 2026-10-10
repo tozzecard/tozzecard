@@ -93,7 +93,7 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
             >
               Spend any day.
               <br />
-              Sell on a good one.
+              Sell on weekdays.
             </h2>
             <p className="mb-[30px] text-[0.95rem] font-normal opacity-85">
               Your card, filled on time.
@@ -155,7 +155,7 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
               {/* biome-ignore lint/performance/noImgElement: static asset that must paint the moment the step appears; next/image defers it */}
               <img src={logoSrc} alt="Tozzecard" className="mb-[15px] h-6 w-6" />
               <p className="max-w-[220px] text-[0.85rem] leading-[1.6] text-[#888]">
-                A card funded by your stocks.
+                Your stocks, ready to spend.
               </p>
             </div>
 

@@ -7,7 +7,7 @@ const GLOBE_VIDEO = "/counter.mp4";
 
 // Each figure is a setting in apps/api (refill.ts DEFAULTS, scheduler.ts DRIFT). Change them together.
 const STATS: { value: number; suffix: string; description: string }[] = [
-  { value: 1, suffix: "%", description: "Most it gives up on a weekend" },
+  { value: 1, suffix: "%", description: "Max gap from Friday's close it accepts on a weekend" },
   { value: 0, suffix: "", description: "BNB needed" },
   { value: 5, suffix: "%", description: "Drift before it rebalances" },
 ];
