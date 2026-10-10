@@ -36,7 +36,13 @@ export function createDidit(cfg: DiditConfig) {
   async function createSession(address: string, callback: string) {
     const r = await call("/session/", {
       method: "POST",
-      body: JSON.stringify({ workflow_id: cfg.workflowId, vendor_data: address, callback }),
+      // "both": Didit's done page otherwise frames the callback, which COEP blocks (#61).
+      body: JSON.stringify({
+        workflow_id: cfg.workflowId,
+        vendor_data: address,
+        callback,
+        callback_method: "both",
+      }),
     });
     return { sessionId: String(r.session_id), url: String(r.url) };
   }

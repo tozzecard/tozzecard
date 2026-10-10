@@ -47,6 +47,7 @@ test("session and decision calls", async () => {
     workflow_id: "wf",
     vendor_data: "0xabc",
     callback: "https://app.tozzecard.xyz/",
+    callback_method: "both",
   });
   expect(await didit.approvedDocument("s1")).toEqual({
     fullName: "Carmen Española",
