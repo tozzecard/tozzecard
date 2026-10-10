@@ -1,22 +1,12 @@
 import type { ActivityItem } from "../../lib/activity";
 
 /**
- * What each kind of row is called (the kinds `useMyActivity` emits), worded for someone who has
+ * What each kind of row is called (the kinds GET /me/activity returns), worded for someone who has
  * used a debit card and never a blockchain: no chain words in a title. Wording is Axel's call.
  */
 const TITLE: Record<string, string> = {
-  sent: "Sent",
-  settled: "Settled",
-  topup: "Top-up",
-  "topup-held": "Top-up, on hold",
-  "topup-cleared": "Top-up cleared",
-  "topup-reversed": "Top-up reversed",
-  "topup-pending": "Top-up",
-  "settle-pending": "Settlement",
-  cashout: "Cash out to bank",
-  withdrawn: "Collateral taken out",
-  verified: "Identity verified",
-  defaulted: "Missed the due date",
+  payment: "Paid",
+  refill: "Top-up from your agent",
 };
 
 function humanize(item: ActivityItem): { title: string; description: string } {
@@ -26,18 +16,8 @@ function humanize(item: ActivityItem): { title: string; description: string } {
 
 /** Which of the icons below a kind gets. */
 const ICON: Record<string, "out" | "in" | "coin" | "check" | "pause"> = {
-  sent: "out",
-  cashout: "out",
-  withdrawn: "out",
-  settled: "in",
-  topup: "coin",
-  "topup-held": "coin",
-  "topup-pending": "coin",
-  "settle-pending": "in",
-  "topup-reversed": "out",
-  "topup-cleared": "check",
-  verified: "check",
-  defaulted: "pause",
+  payment: "out",
+  refill: "coin",
 };
 
 function ActivityIcon({ kind }: { kind: string }) {
