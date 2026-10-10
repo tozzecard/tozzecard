@@ -54,17 +54,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /**
- * Setting the agent up, in plain words: what you tell it once at onboarding (strategy and weekly
- * budget, plan §3.1) and what it then does. Every reply is a real rule in apps/api: refill from the
- * most overweight stock, and on a weekend sell only within 1% of Friday's close.
+ * One purchase, then the reveal: nothing was sold to pay for it, because the card was topped up
+ * earlier from the stock that grew past its target (apps/api refill.ts). Payments are one-off B402
+ * authorizations, so no subscriptions here.
  */
 const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[] = [
-  { speaker: "you", text: "keep my card ready for the week" },
-  { speaker: "card", text: "on it. you spend about $80 a week." },
-  { speaker: "you", text: "and when it runs low?" },
-  { speaker: "card", text: "I sell a little NVDA. it grew past your target." },
-  { speaker: "you", text: "even on a saturday?" },
-  { speaker: "card", text: "only near Friday's price. otherwise I wait.", emphasis: true },
+  { speaker: "you", text: "pay for dinner" },
+  { speaker: "card", text: "done. $32 from your card." },
+  { speaker: "you", text: "did you sell stock for that?" },
+  { speaker: "card", text: "no. your card was topped up on friday." },
+  { speaker: "you", text: "with what?" },
+  { speaker: "card", text: "a little NVDA. it grew past your target.", emphasis: true },
 ];
 
 /**
@@ -502,7 +502,7 @@ function ChatDemoSection() {
                       started ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    {isYou ? "You:" : "Agent:"}
+                    {isYou ? "You:" : "Tozzecard:"}
                   </span>
                 )}
                 {/*
