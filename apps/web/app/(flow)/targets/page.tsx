@@ -13,16 +13,44 @@ interface Strategy {
   tokens: { address: string; symbol: string | null; weight: number }[];
 }
 
-/** Stocks the agent can hold, as /market symbols (Ondo). */
-const CHOICES = [
-  { symbol: "NVDAon", ticker: "NVDA", name: "NVIDIA" },
-  { symbol: "AAPLon", ticker: "AAPL", name: "Apple" },
-  { symbol: "MSFTon", ticker: "MSFT", name: "Microsoft" },
-  { symbol: "GOOGLon", ticker: "GOOGL", name: "Alphabet" },
-  { symbol: "AMZNon", ticker: "AMZN", name: "Amazon" },
-  { symbol: "METAon", ticker: "META", name: "Meta" },
-  { symbol: "TSLAon", ticker: "TSLA", name: "Tesla" },
+interface Choice {
+  symbol: string;
+  ticker: string;
+  name: string;
+}
+
+/**
+ * Stocks the agent can hold, as /market symbols, by issuer. bStocks (Binance) swap straight to
+ * USD1; Ondo goes through USDT first (research.md L3). Apple and Amazon have no bStock on BSC.
+ */
+const GROUPS: { title: string; hint: string; choices: Choice[] }[] = [
+  {
+    title: "bStocks · Binance",
+    hint: "Sells straight to dollars for your card.",
+    choices: [
+      { symbol: "NVDAB", ticker: "NVDA", name: "NVIDIA" },
+      { symbol: "MSFTB", ticker: "MSFT", name: "Microsoft" },
+      { symbol: "GOOGLB", ticker: "GOOGL", name: "Alphabet" },
+      { symbol: "METAB", ticker: "META", name: "Meta" },
+      { symbol: "TSLAB", ticker: "TSLA", name: "Tesla" },
+    ],
+  },
+  {
+    title: "Ondo",
+    hint: "Sells through USDT, then to dollars.",
+    choices: [
+      { symbol: "NVDAon", ticker: "NVDA", name: "NVIDIA" },
+      { symbol: "AAPLon", ticker: "AAPL", name: "Apple" },
+      { symbol: "MSFTon", ticker: "MSFT", name: "Microsoft" },
+      { symbol: "GOOGLon", ticker: "GOOGL", name: "Alphabet" },
+      { symbol: "AMZNon", ticker: "AMZN", name: "Amazon" },
+      { symbol: "METAon", ticker: "META", name: "Meta" },
+      { symbol: "TSLAon", ticker: "TSLA", name: "Tesla" },
+    ],
+  },
 ];
+
+const CHOICES = GROUPS.flatMap((g) => g.choices);
 
 /**
  * Onboarding step 4 (plan §3.1): which stocks and in what split, and roughly what you spend a
@@ -47,7 +75,7 @@ export default function TargetsPage() {
       const c = CHOICES.find((x) => x.symbol === t.symbol);
       if (c) next[c.symbol] = Math.round(t.weight * 100);
     }
-    setPcts(Object.keys(next).length ? next : { NVDAon: 70, AAPLon: 30 });
+    setPcts(Object.keys(next).length ? next : { NVDAB: 70, MSFTB: 30 });
     if (current.data.weeklyEstimateUsd) setWeekly(String(current.data.weeklyEstimateUsd));
   }, [current.data, pcts]);
 
@@ -98,37 +126,47 @@ export default function TargetsPage() {
         Pick the split. The agent buys it, and sells what grows past it to fill your card.
       </p>
 
-      <Card className="mt-6 divide-y divide-line px-4">
-        {CHOICES.map((c) => {
-          const v = pcts[c.symbol] ?? 0;
-          return (
-            <div key={c.symbol} className="flex items-center gap-3 py-3">
-              <StockLogo ticker={c.ticker} />
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-semibold">{c.name}</div>
-                <div className="text-[12px] text-muted">{c.symbol}</div>
-              </div>
-              <button
-                type="button"
-                aria-label={`Less ${c.name}`}
-                onClick={() => step(c.symbol, -10)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
-              >
-                −
-              </button>
-              <span className="w-11 text-center text-[15px] font-semibold tabular-nums">{v}%</span>
-              <button
-                type="button"
-                aria-label={`More ${c.name}`}
-                onClick={() => step(c.symbol, 10)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
-              >
-                +
-              </button>
-            </div>
-          );
-        })}
-      </Card>
+      {GROUPS.map((g) => (
+        <section key={g.title} className="mt-6">
+          <div className="mx-1 mb-2 flex items-baseline justify-between gap-3">
+            <h2 className="text-sm font-medium text-ink-2">{g.title}</h2>
+            <span className="text-[12px] text-muted">{g.hint}</span>
+          </div>
+          <Card className="divide-y divide-line px-4">
+            {g.choices.map((c) => {
+              const v = pcts[c.symbol] ?? 0;
+              return (
+                <div key={c.symbol} className="flex items-center gap-3 py-3">
+                  <StockLogo ticker={c.ticker} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14px] font-semibold">{c.name}</div>
+                    <div className="text-[12px] text-muted">{c.symbol}</div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Less ${c.symbol}`}
+                    onClick={() => step(c.symbol, -10)}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
+                  >
+                    −
+                  </button>
+                  <span className="w-11 text-center text-[15px] font-semibold tabular-nums">
+                    {v}%
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`More ${c.symbol}`}
+                    onClick={() => step(c.symbol, 10)}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-pill text-lg font-semibold"
+                  >
+                    +
+                  </button>
+                </div>
+              );
+            })}
+          </Card>
+        </section>
+      ))}
       <p className={`mx-1 mt-2 text-[12px] ${total === 100 ? "text-muted" : "text-neg"}`}>
         {total === 100 ? "Adds up to 100%." : `Adds up to ${total}%. It needs to be 100%.`}
       </p>
