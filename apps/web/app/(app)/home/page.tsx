@@ -16,12 +16,13 @@ import type { ActivityItem } from "../../../lib/activity";
 import { type Activity, ApiError, api, bscscanTx, type Me } from "../../../lib/api";
 import { isActive } from "../../../lib/card";
 import { ago, signedUsd } from "../../../lib/format";
+import { compactHolder } from "../../../lib/holder";
 
 /** "ALEX LEE" → "Alex Lee" for the folder tab; the card face keeps the embossed capitals. */
 const titleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
-function toItems(rows: Activity[], now: number | null): ActivityItem[] {
-  return rows.map((r, i) => ({
+function toItems(rows: Activity[], now: number | null, issuedAt?: number): ActivityItem[] {
+  const items: ActivityItem[] = rows.map((r, i) => ({
     id: i,
     cat: r.type === "refill" ? "auto" : "you",
     kind: r.type,
@@ -31,6 +32,19 @@ function toItems(rows: Activity[], now: number | null): ActivityItem[] {
     href: r.tx ? bscscanTx(r.tx) : undefined,
     group: "card",
   }));
+  // The card is issued the moment the ID check is approved (#51), so its createdAt is when the
+  // identity was verified. The statement has no such row, so it is added here.
+  if (issuedAt)
+    items.push({
+      id: -1,
+      cat: "you",
+      kind: "verified",
+      detail: "Your ID was approved and your card issued",
+      when: now ? ago(issuedAt, now) : "",
+      at: issuedAt,
+      group: "card",
+    });
+  return items.sort((a, b) => (b.at ?? 0) - (a.at ?? 0));
 }
 
 /** Home: what the card can spend, the card itself (or the step that activates it), its history. */
@@ -53,7 +67,11 @@ export default function HomePage() {
     return () => window.clearInterval(id);
   }, []);
 
-  const items = useMemo(() => toItems(activity.data ?? [], now), [activity.data, now]);
+  const issuedAt = me.data?.kyc === "approved" ? me.data.card?.createdAt : undefined;
+  const items = useMemo(
+    () => toItems(activity.data ?? [], now, issuedAt),
+    [activity.data, now, issuedAt],
+  );
   const preview = items.slice(0, 5);
   const data = me.data;
   const active = isActive(data);
@@ -106,7 +124,7 @@ export default function HomePage() {
         ) : active && card ? (
           <div className="mb-[26px] flex justify-center">
             <CardFolder
-              title={titleCase(card.holder)}
+              title={compactHolder(titleCase(card.holder))}
               ariaLabel={`Your card, ${card.holder}`}
               cardNumber={card.number}
               expiry={card.expiry}

@@ -7,6 +7,7 @@ import type { ActivityItem } from "../../lib/activity";
 const TITLE: Record<string, string> = {
   payment: "Paid",
   refill: "Top-up from your agent",
+  verified: "ID verified",
 };
 
 function humanize(item: ActivityItem): { title: string; description: string } {
@@ -18,6 +19,7 @@ function humanize(item: ActivityItem): { title: string; description: string } {
 const ICON: Record<string, "out" | "in" | "coin" | "check" | "pause"> = {
   payment: "out",
   refill: "coin",
+  verified: "check",
 };
 
 function ActivityIcon({ kind }: { kind: string }) {
