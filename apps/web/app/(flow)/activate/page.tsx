@@ -1,33 +1,61 @@
 "use client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import QRCode from "react-qr-code";
-import { Button, CopyButton } from "../../../components/ui";
+import { BottomSheet, Button, Card, CopyButton } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
 import type { AgentSession, Me } from "../../../lib/api";
+
+const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+function Badge({ n, done }: { n: number; done: boolean }) {
+  return (
+    <span
+      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-[13px] font-semibold ${
+        done ? "bg-pos text-white" : "border border-line-2 bg-white text-ink"
+      }`}
+    >
+      {done ? (
+        <svg
+          aria-hidden="true"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      ) : (
+        n
+      )}
+    </span>
+  );
+}
 
 function Step({
   n,
   done,
   title,
+  body,
   children,
 }: {
   n: number;
   done: boolean;
   title: string;
-  children: ReactNode;
+  body: string;
+  children?: ReactNode;
 }) {
   return (
-    <li className="flex gap-3.5 border-t border-line py-5 first:border-t-0">
-      <span
-        className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px] font-semibold ${done ? "bg-pos text-white" : "bg-pill text-ink-2"}`}
-      >
-        {done ? "✓" : n}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-semibold">{title}</div>
-        <div className="mt-1 text-[13px] text-muted">{children}</div>
+    <li className="flex gap-3.5 py-4">
+      <Badge n={n} done={done} />
+      <div className="min-w-0 flex-1 pt-1">
+        <div className="text-[15px] font-semibold leading-tight">{title}</div>
+        <p className="mt-1 text-[13px] leading-snug text-muted">{body}</p>
+        {children}
       </div>
     </li>
   );
@@ -43,6 +71,7 @@ export default function ActivatePage() {
   const router = useRouter();
   const me = useApi<Me>("/me", 8_000);
   const session = useApi<AgentSession>("/agent/session", 15_000);
+  const [qr, setQr] = useState(false);
   const address = me.data?.card?.address ?? "";
   const connected = Boolean(session.data?.connected && !session.data.devMode);
   const linked = Boolean(me.data?.agent.linked);
@@ -51,52 +80,96 @@ export default function ActivatePage() {
     <div className="flex flex-1 flex-col">
       <button
         type="button"
+        aria-label="Back"
         onClick={() => router.push("/home")}
-        className="self-start text-sm font-medium text-muted"
+        className="-ml-2 grid h-10 w-10 place-items-center rounded-full text-ink-2"
       >
-        ← Home
+        <svg
+          aria-hidden="true"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+        >
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
       </button>
-      <h1 className="mt-4 text-[28px] font-semibold tracking-[-0.03em]">Activate your card</h1>
-      <p className="mt-1 text-[14px] text-muted">
-        Three steps in the Binance App and here. Your stocks never leave your own wallet.
-      </p>
 
-      <ol className="mt-4">
-        <Step n={1} done={connected} title="Connect your agent">
-          Sign in to your Binance Agentic Wallet and confirm in the Binance App. Keep Developer Mode
-          off.
-          {session.off ? " The agent isn't running on the server yet." : ""}
-        </Step>
-        <Step n={2} done={linked} title="Lock it to this card">
-          In the Binance App, add this address to your Agentic Wallet address book, and nothing
-          else. Set a daily limit you are comfortable with.
-          {address ? (
-            <span className="mt-3 block rounded-2xl border border-line bg-white p-3">
-              <span className="mx-auto mb-3 block w-fit">
-                <QRCode value={address} size={120} />
-              </span>
-              <span className="flex items-center gap-2">
-                <code className="min-w-0 flex-1 break-all font-mono text-[12px] text-ink-2">
-                  {address}
+      <h1 className="mt-3 text-[28px] font-semibold leading-tight tracking-[-0.03em]">
+        Activate your card
+      </h1>
+      <p className="mt-1.5 text-[14px] text-muted">Three steps. Your stocks stay in your wallet.</p>
+
+      <Card className="mt-6 px-4">
+        <ol className="divide-y divide-line">
+          <Step
+            n={1}
+            done={connected}
+            title="Connect your agent"
+            body={
+              session.off
+                ? "Sign in to your Agentic Wallet in the Binance App. The agent isn't running yet."
+                : "Sign in to your Agentic Wallet in the Binance App."
+            }
+          />
+          <Step
+            n={2}
+            done={linked}
+            title="Lock it to this card"
+            body="Add this address to your Agentic Wallet address book. Nothing else."
+          >
+            {address ? (
+              <div className="mt-3 flex items-center gap-2">
+                <code className="min-w-0 flex-1 truncate rounded-full bg-pill px-3 py-2 font-mono text-[12.5px] text-ink-2">
+                  {short(address)}
                 </code>
                 <CopyButton value={address} />
-              </span>
-            </span>
-          ) : null}
-        </Step>
-        <Step n={3} done={false} title="Choose your stocks">
-          Pick the split and roughly what you spend a week.{" "}
-          <Link href="/targets" className="font-semibold text-ink underline underline-offset-2">
-            Set targets
-          </Link>
-        </Step>
-      </ol>
+                <button
+                  type="button"
+                  onClick={() => setQr(true)}
+                  className="h-8 shrink-0 rounded-full border border-line bg-white px-3 text-[12px] font-semibold text-ink-2"
+                >
+                  QR
+                </button>
+              </div>
+            ) : null}
+          </Step>
+          <Step
+            n={3}
+            done={false}
+            title="Choose your stocks"
+            body="Pick the split and roughly what you spend a week."
+          >
+            <button
+              type="button"
+              onClick={() => router.push("/targets")}
+              className="mt-3 h-9 rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink-2"
+            >
+              Set targets
+            </button>
+          </Step>
+        </ol>
+      </Card>
 
-      <div className="mt-auto pt-6">
+      <div className="mt-auto pt-8">
         <Button type="button" onClick={() => router.push("/home")} disabled={!linked}>
-          {linked ? "Done" : "Waiting for the address book…"}
+          {linked ? "Done" : "Waiting for step 2…"}
         </Button>
       </div>
+
+      <BottomSheet open={qr} onClose={() => setQr(false)} label="Card address">
+        <h2 className="mb-1 text-xl font-semibold">Your card address</h2>
+        <p className="mb-5 text-sm text-muted">Scan it from the Binance App address book.</p>
+        <div className="mx-auto mb-4 w-fit rounded-[20px] border border-line bg-white p-4">
+          <QRCode value={address || " "} size={180} />
+        </div>
+        <code className="block break-all text-center font-mono text-[12px] text-ink-2">
+          {address}
+        </code>
+      </BottomSheet>
     </div>
   );
 }
