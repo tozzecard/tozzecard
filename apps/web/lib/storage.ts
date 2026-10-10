@@ -9,4 +9,8 @@ export const STORAGE = {
   credential: "tozzecard.passkey.v1",
   /** "1" once the three-step tour has been seen or skipped. */
   onboardingDone: "tozzecard.onboarding.done",
+  /** "card" or "agent": which mode Home and the bottom bar show. */
+  mode: "tozzecard.mode.v1",
+  /** "1" once someone chose to carry on with Tozzecard on a desktop. */
+  desktopOk: "tozzecard.desktop.ok",
 } as const;

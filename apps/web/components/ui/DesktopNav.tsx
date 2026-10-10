@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useMode } from "../../hooks/useMode";
 import { SHELL } from "./shell";
 
 /**
@@ -28,11 +29,19 @@ import { SHELL } from "./shell";
  * bottom nav untouched.
  */
 
-const LINKS = [
-  { href: "/home", label: "Home" },
-  { href: "/strategy", label: "Strategy" },
-  { href: "/account", label: "Account" },
-] as const;
+/** Same tabs as the bottom bar: the middle one follows the mode. */
+const LINKS = {
+  card: [
+    { href: "/home", label: "Home" },
+    { href: "/pay", label: "Pay" },
+    { href: "/account", label: "Account" },
+  ],
+  agent: [
+    { href: "/home", label: "Home" },
+    { href: "/strategy", label: "Strategy" },
+    { href: "/account", label: "Account" },
+  ],
+} as const;
 
 function Item({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
   return (
@@ -52,6 +61,7 @@ function Item({ href, active, children }: { href: string; active: boolean; child
 
 export function DesktopNav({ account }: { account?: ReactNode }) {
   const path = usePathname();
+  const { mode } = useMode();
 
   // `hidden lg:block` sits on the header itself rather than on a wrapper, and that is load-bearing:
   // `position: sticky` only sticks inside its own parent's box, so a wrapper collapsed to the bar's
@@ -81,7 +91,7 @@ export function DesktopNav({ account }: { account?: ReactNode }) {
         <span aria-hidden className="h-5 w-px shrink-0 bg-line-2" />
 
         <nav aria-label="Primary" className="flex items-center gap-1">
-          {LINKS.map((link) => (
+          {LINKS[mode].map((link) => (
             <Item key={link.href} href={link.href} active={path === link.href}>
               {link.label}
             </Item>

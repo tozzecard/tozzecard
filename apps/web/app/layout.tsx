@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { switzer } from "../lib/fonts";
 import { CardProvider } from "../providers/CardProvider";
+import { ModeProvider } from "../providers/ModeProvider";
 import { ToastProvider } from "../providers/ToastProvider";
 
 export const metadata: Metadata = {
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${switzer.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <CardProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ModeProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ModeProvider>
         </CardProvider>
       </body>
     </html>

@@ -16,8 +16,8 @@ export function ReceiveSheet({
   address: string;
 }) {
   return (
-    <BottomSheet open={open} onClose={onClose} label="Receive money">
-      <h2 className="mb-1 text-xl font-semibold">Receive money</h2>
+    <BottomSheet open={open} onClose={onClose} label="Top up">
+      <h2 className="mb-1 text-xl font-semibold">Top up</h2>
       <p className="mb-5 text-sm text-muted">Scan this to send USD1 to your card, on BNB Chain.</p>
       <div className="mx-auto mb-5 w-fit rounded-[20px] border border-line bg-white p-4">
         <QRCode value={address} size={184} bgColor="#ffffff" fgColor="#111316" />
@@ -27,7 +27,7 @@ export function ReceiveSheet({
           <div className="text-[11px] font-medium text-muted">Your card address</div>
           <div className="mt-0.5 break-all font-mono text-[12.5px] text-ink-2">{address}</div>
         </div>
-        <CopyButton value={address} label="Copy your account" />
+        <CopyButton value={address} label="Copy address" />
       </div>
     </BottomSheet>
   );

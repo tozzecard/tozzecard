@@ -6,6 +6,7 @@ import QRCode from "react-qr-code";
 import { formatUnits } from "viem";
 import { Button, Card, SuccessCheck } from "../../../components/ui";
 import { useCard } from "../../../hooks/useCard";
+import { useMode } from "../../../hooks/useMode";
 import { API_URL, bscscanTx } from "../../../lib/api";
 import { usd } from "../../../lib/format";
 import { passkeyError } from "../../../lib/passkey";
@@ -35,6 +36,9 @@ function Pay() {
   const params = useSearchParams();
   const orderId = params.get("order");
   const { unlock } = useCard();
+  const { setMode } = useMode();
+  // Pay is the card's tab: reaching it puts the app in card mode.
+  useEffect(() => setMode("card"), [setMode]);
   const [order, setOrder] = useState<Order | null>(null);
   const [req, setReq] = useState<Requirement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +109,7 @@ function Pay() {
 
   if (!orderId) {
     return (
-      <form onSubmit={createOrder} className="flex flex-1 flex-col">
+      <form onSubmit={createOrder} className="mx-auto flex w-full max-w-[560px] flex-col">
         <h1 className="text-[28px] font-semibold tracking-[-0.03em]">Demo merchant</h1>
         <p className="mt-1 text-[14px] text-muted">
           Create an order, then pay it with your card. Real USD1 on BNB Chain.
@@ -120,7 +124,7 @@ function Pay() {
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
           className="mt-2 h-14 rounded-2xl border border-line bg-white px-4 text-2xl font-semibold tabular-nums outline-none focus:border-ink"
         />
-        <div className="mt-auto pt-8">
+        <div className="pt-8">
           {error ? <p className="mb-3 text-center text-[13px] text-neg">{error}</p> : null}
           <Button type="submit" disabled={busy || !(Number(amount) > 0)}>
             {busy ? "Creating…" : "Create order"}
@@ -132,14 +136,7 @@ function Pay() {
 
   const link = typeof window === "undefined" ? "" : window.location.href;
   return (
-    <div className="flex flex-1 flex-col">
-      <button
-        type="button"
-        onClick={() => router.push("/home")}
-        className="self-start text-sm font-medium text-muted"
-      >
-        ← Card
-      </button>
+    <div className="mx-auto flex w-full max-w-[560px] flex-col">
       {order?.status === "paid" ? (
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <SuccessCheck size={56} className="text-pos" />
@@ -180,7 +177,7 @@ function Pay() {
             </div>
           ) : null}
           <p className="mt-2 text-center text-[12px] text-faint">Scan to pay from another phone</p>
-          <div className="mt-auto pt-8">
+          <div className="pt-8">
             {error ? <p className="mb-3 text-center text-[13px] text-neg">{error}</p> : null}
             <Button type="button" onClick={() => void pay()} disabled={busy || !req}>
               {busy ? "Waiting for Face ID…" : "Pay with Face ID"}

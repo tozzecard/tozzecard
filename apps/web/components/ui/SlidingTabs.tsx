@@ -28,6 +28,9 @@ export function SlidingTabs<T extends string>({
   onChange,
   label,
   className = "",
+  highlightClassName = "bg-[#ECECEC]",
+  activeClassName = "text-pill-ink",
+  idleClassName = "text-[#8a8a8a] hover:text-ink",
 }: {
   options: readonly { key: T; label: string }[];
   value: T;
@@ -35,6 +38,11 @@ export function SlidingTabs<T extends string>({
   /** Names the group for assistive tech. */
   label: string;
   className?: string;
+  /** Colour of the sliding pill. */
+  highlightClassName?: string;
+  /** Label colour on the selected tab, and on the others. */
+  activeClassName?: string;
+  idleClassName?: string;
 }) {
   const row = useRef<HTMLDivElement | null>(null);
   const highlight = useRef<HTMLDivElement | null>(null);
@@ -77,7 +85,7 @@ export function SlidingTabs<T extends string>({
       <div
         ref={highlight}
         aria-hidden="true"
-        className="absolute left-0 top-0 h-9 rounded-full bg-[#ECECEC]"
+        className={`absolute left-0 top-0 h-9 rounded-full ${highlightClassName}`}
       />
       {options.map((option) => (
         <button
@@ -87,7 +95,7 @@ export function SlidingTabs<T extends string>({
           aria-pressed={option.key === value}
           onClick={() => onChange(option.key)}
           className={`relative h-9 flex-1 rounded-full text-[13.5px] font-medium transition-colors ${
-            option.key === value ? "text-pill-ink" : "text-[#8a8a8a] hover:text-ink"
+            option.key === value ? activeClassName : idleClassName
           }`}
         >
           {option.label}
