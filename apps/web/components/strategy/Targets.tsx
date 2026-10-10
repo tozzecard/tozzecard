@@ -152,7 +152,7 @@ export function Targets() {
                     type="button"
                     aria-label={`Type a share for ${c.symbol}`}
                     onClick={() => setEditing(c.symbol)}
-                    className="h-9 w-12 rounded-xl text-center text-[15px] font-semibold tabular-nums active:bg-pill"
+                    className="h-9 w-14 rounded-xl bg-[#E9E9E9] text-center text-[15px] font-semibold tabular-nums transition-colors hover:bg-[#E0E0E0] active:bg-[#D6D6D6]"
                   >
                     {v}%
                   </button>
@@ -179,7 +179,7 @@ export function Targets() {
           id="weekly"
           type="button"
           onClick={() => setEditing("weekly")}
-          className="h-9 min-w-20 rounded-xl bg-pill px-3 text-right text-[15px] font-semibold tabular-nums"
+          className="h-9 min-w-20 rounded-xl bg-[#E9E9E9] px-3 text-right text-[15px] font-semibold tabular-nums transition-colors hover:bg-[#E0E0E0] active:bg-[#D6D6D6]"
         >
           {weekly}
         </button>
