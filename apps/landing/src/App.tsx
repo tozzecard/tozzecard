@@ -735,12 +735,12 @@ function ReachSection() {
 }
 
 /**
- * The Binance mark, animated, with its yellow backdrop keyed out by luminance so the ink sits on the
- * page. Same engine split as the top-up video: VP9 alpha for Chrome and Firefox, HEVC alpha for
- * WebKit. Plays once when it scrolls into view; reduced motion gets the final frame.
+ * The Binance mark, animated and looping, full viewport, with its yellow backdrop keyed out by
+ * luminance so the ink sits on the page. Same engine split as the top-up video: VP9 alpha for
+ * Chrome and Firefox, HEVC alpha for WebKit. The clip ends on an empty frame, so it must loop.
+ * Reduced motion gets a still of the full logo.
  */
 function BinanceSection() {
-  const [ref, inView] = useInView<HTMLElement>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);
 
@@ -752,41 +752,39 @@ function BinanceSection() {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !src || !inView) return;
+    if (!video || !src) return;
     video.muted = true;
     void video.play().catch(() => {});
-  }, [src, inView]);
+  }, [src]);
 
   return (
-    <section ref={ref} className={`${GUTTER} py-16 text-center sm:py-24`}>
-      <div className="mx-auto w-full max-w-3xl">
-        {src ? (
-          <video
-            ref={videoRef}
-            key={src}
-            src={src}
-            poster="/binance-poster.png"
-            muted
-            playsInline
-            preload="auto"
-            className="aspect-video w-full"
-          />
-        ) : (
-          // biome-ignore lint/performance/noImgElement: the final frame standing in for the video, same size
-          <img
-            src="/binance-poster.png"
-            alt="Binance"
-            width={1280}
-            height={720}
-            className="aspect-video w-full"
-          />
-        )}
-      </div>
-      <Reveal delay={0.08}>
-        <p className="text-[15px] text-[#18161B]/60 sm:text-base">
-          Runs on your own Binance wallet.
-        </p>
-      </Reveal>
+    <section className="relative h-screen w-full overflow-hidden">
+      {src ? (
+        <video
+          ref={videoRef}
+          key={src}
+          src={src}
+          poster="/binance-poster.png"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        // biome-ignore lint/performance/noImgElement: a still of the full logo standing in for the video
+        <img
+          src="/binance-poster.png"
+          alt="Binance"
+          width={1280}
+          height={720}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+      <p className="absolute inset-x-0 bottom-10 text-center text-[15px] text-[#18161B]/60 sm:bottom-14 sm:text-base">
+        Runs on your own Binance wallet.
+      </p>
     </section>
   );
 }
