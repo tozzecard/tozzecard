@@ -147,7 +147,7 @@ export default function ActivatePage() {
           >
             <button
               type="button"
-              onClick={() => router.push("/targets")}
+              onClick={() => router.push("/strategy")}
               className="mt-3 h-9 rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-ink-2"
             >
               Set targets

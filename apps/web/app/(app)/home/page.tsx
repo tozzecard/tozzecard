@@ -7,6 +7,7 @@ import { CardArtwork } from "../../../components/card/CardArtwork";
 import { ActivateCard } from "../../../components/home/ActivateCard";
 import { AvailableHero } from "../../../components/home/AvailableHero";
 import { BalanceSection } from "../../../components/home/BalanceSection";
+import { PortfolioSection } from "../../../components/home/PortfolioSection";
 import { CardFolder } from "../../../components/motion/card-folder";
 import { ActionPill, ActionRow, Card, Skeleton, Toast } from "../../../components/ui";
 import { useApi } from "../../../hooks/useApi";
@@ -135,6 +136,8 @@ export default function HomePage() {
         {active && data ? (
           <BalanceSection className="mb-[22px]" usd1={data.balance.usd1} bnb={data.balance.bnb} />
         ) : null}
+
+        {data?.agent.linked ? <PortfolioSection className="mb-[22px]" /> : null}
 
         <h2 className="mx-1 mb-2 text-sm font-medium text-muted">History</h2>
         <Card className="px-5 pb-2 pt-1">
