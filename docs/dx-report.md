@@ -11,7 +11,7 @@ and refills a passkey card wallet in USD1 while the US market is open; the card 
 real money, `baw` 1.10.0, Binance Web3 API (RWA Data, Trading, B402). 28 Sep – 11 Oct 2026, team of three,
 working from Indonesia; API server in Kuala Lumpur.
 
-Totals from our log: **51 notes, ~405 minutes lost**: AI stack 165, tokenized-stock data 105, docs 65,
+Totals from our log: **52 notes, ~415 minutes lost**: AI stack 175, tokenized-stock data 105, docs 65,
 API 50, onboarding 20.
 
 ---
