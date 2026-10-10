@@ -96,7 +96,7 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
               Sell on a good one.
             </h2>
             <p className="mb-[30px] text-[0.95rem] font-normal opacity-85">
-              Let the agent sell at the right time, so you never sell at the wrong one
+              Your card, filled on time.
             </p>
             <a
               href={APP_URL}
@@ -149,13 +149,13 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
 
       <footer className="rounded-t-[32px] bg-[#fafafa] pb-5 pt-[60px] md:rounded-t-[56px] md:pt-20">
         <div className="mx-auto w-full max-w-[1100px] px-5">
-          <div className="mb-[50px] grid grid-cols-1 gap-10 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr_2fr]">
+          <div className="mb-[50px] grid grid-cols-1 gap-10 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr]">
             <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {/* biome-ignore lint/performance/noImgElement: static asset that must paint the moment the step appears; next/image defers it */}
               <img src={logoSrc} alt="Tozzecard" className="mb-[15px] h-6 w-6" />
               <p className="max-w-[220px] text-[0.85rem] leading-[1.6] text-[#888]">
-                Your stocks, managed by an agent. Your spending, from a card you own.
+                A card funded by your stocks.
               </p>
             </div>
 
@@ -178,47 +178,11 @@ export function ClosingFooter({ logoSrc, faqId }: { logoSrc: string; faqId?: str
                 </ul>
               </div>
             ))}
-
-            <div>
-              <h4 className="mb-5 text-[0.95rem] font-semibold text-[#18161B]">Stay in the loop</h4>
-              <p className="mb-[15px] text-[0.85rem] text-[#888]">
-                We will tell you when the card is ready.
-              </p>
-              <form
-                className="flex gap-[10px]"
-                onSubmit={(event) => {
-                  // No backend yet, so the form must not navigate away.
-                  event.preventDefault();
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email..."
-                  className="min-w-0 flex-grow border border-[#f0f0f0] bg-white text-[0.9rem] outline-none transition-colors duration-200 focus:border-[#ccc]"
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: "10px",
-                    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.02)",
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="cursor-pointer border-none bg-[#18161B] text-[0.9rem] font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5"
-                  style={{
-                    padding: "12px 28px",
-                    borderRadius: "10px",
-                    boxShadow: "0 12px 24px rgba(0,0,0,0.4)",
-                  }}
-                >
-                  Notify me
-                </button>
-              </form>
-            </div>
           </div>
 
           <div className="flex flex-col items-center gap-[15px] border-t border-[#f0f0f0] pb-[10px] pt-[25px] text-[0.85rem] text-[#888] min-[480px]:flex-row min-[480px]:justify-between">
             <span>Tozzecard, 2026</span>
-            <span>Testnet only. Every token here is a test token.</span>
+            <span>Live on BNB Chain.</span>
           </div>
         </div>
       </footer>
