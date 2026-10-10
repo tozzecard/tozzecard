@@ -26,6 +26,7 @@ Full design: [`docs/plan.md`](docs/plan.md). Evidence behind every technical cla
 | Path | What | Owner |
 | --- | --- | --- |
 | [`apps/web`](apps/web) | Cardholder app: onboarding, card, pay, portfolio, agent feed (Next.js) | Axel |
+| [`apps/landing`](apps/landing) | Marketing site at tozzecard.xyz (Next.js) | Axel |
 | [`apps/docs`](apps/docs) | Public docs on Mintlify (docs.tozzecard.xyz); API reference generated from `/openapi.json` | Kiel |
 | [`apps/api`](apps/api) | Backend: market hours, spend forecaster, refill/rebalance scheduler, decision log (Bun + Hono) | Kiel |
 | [`packages/agent`](packages/agent) | Agent wallet execution: quote → dry-run → swap → refill | Fajar |
