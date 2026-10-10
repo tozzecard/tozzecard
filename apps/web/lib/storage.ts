@@ -7,4 +7,6 @@ export const STORAGE = {
   session: "tozzecard.session.v1",
   /** The passkey credential id, so sign-in can offer the same passkey first. */
   credential: "tozzecard.passkey.v1",
+  /** "1" once the three-step tour has been seen or skipped. */
+  onboardingDone: "tozzecard.onboarding.done",
 } as const;
