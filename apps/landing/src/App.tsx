@@ -73,23 +73,23 @@ const TRANSCRIPT: { speaker: "you" | "card"; text: string; emphasis?: boolean }[
  */
 const PILLARS: { title: string; blurb: string; src: string }[] = [
   {
-    title: "Verified once",
-    blurb: "One identity check, before your first draw",
+    title: "Nobody holds your money",
+    blurb: "Your stocks sit in your own Binance wallet, your dollars on a card only you can unlock",
     src: "/profile.avif",
   },
   {
-    title: "Collateral keeps earning",
-    blurb: "It grows in a yield vault while it backs your limit",
+    title: "The agent can only fill your card",
+    blurb: "Binance lets it send to your address book, and only you can edit that, in the Binance App",
     src: "/lock.avif",
   },
   {
-    title: "Checkable by anyone",
-    blurb: "Your score and limit are worked out on Monad, never set by hand",
+    title: "Every move explained",
+    blurb: "What it sold, when, and why, with the transaction you can look up on BNB Chain",
     src: "/network.webp",
   },
   {
-    title: "Defaults are public",
-    blurb: "Past due, anyone can close the position",
+    title: "Nothing of ours in the middle",
+    blurb: "Every contract is Binance's, BNB Chain's or the stock issuer's. We wrote none of them",
     src: "/shield.webp",
   },
 ];
@@ -769,7 +769,7 @@ function FeaturesSection() {
   return (
     <section id={SECTION_FEATURES} className={`${GUTTER} scroll-mt-24 py-16 sm:py-24`}>
       <Reveal>
-        <p className={EYEBROW}>Built to be checked</p>
+        <p className={EYEBROW}>Built so you do not have to trust us</p>
       </Reveal>
 
       <Reveal delay={0.08}>
