@@ -743,7 +743,7 @@ function ReachSection() {
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
         <Reveal>
           <p className="text-[12px] font-medium uppercase tracking-[0.5px] text-[#18161B]/45">
-            Your record lives on Monad
+            Tokenized stocks trade around the clock
           </p>
         </Reveal>
         <Reveal delay={0.08}>
@@ -755,9 +755,9 @@ function ReachSection() {
               letterSpacing: "-0.03em",
             }}
           >
-            Change countries.
+            Spend at any hour.
             <br />
-            Keep your limit.
+            Sell in market hours.
           </h2>
         </Reveal>
       </div>
