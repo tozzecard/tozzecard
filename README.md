@@ -4,6 +4,8 @@
 
 Built for the [BNB Chain × Binance Web3 Wallet Tokenized Stocks hackathon](https://www.bnbchain.org/en/hackathons/tokenized-stocks). BSC mainnet, spot only.
 
+**Demo video (2 min):** <https://youtu.be/Rjz796_KXoc> · **App:** <https://app.tozzecard.xyz> · **Docs:** <https://docs.tozzecard.xyz>
+
 ## The idea
 
 Tokenized stocks trade around the clock; the market behind them does not. From Friday 4pm New York
