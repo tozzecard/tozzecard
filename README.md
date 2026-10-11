@@ -30,6 +30,7 @@ Full design: [`docs/plan.md`](docs/plan.md). Evidence behind every technical cla
 | [`apps/docs`](apps/docs) | Public docs on Mintlify (docs.tozzecard.xyz); API reference generated from `/openapi.json` | Kiel |
 | [`apps/api`](apps/api) | Backend: market hours, spend forecaster, refill/rebalance scheduler, decision log (Bun + Hono) | Kiel |
 | [`packages/agent`](packages/agent) | Agent wallet execution: quote → dry-run → swap → refill | Fajar |
+| [`packages/agent/studio`](packages/agent/studio) | BNB Agent Studio seller agent (BSC testnet): sells the refill decision over ERC-8183 | Fajar |
 | [`packages/binance`](packages/binance) | Binance Web3 API client (RWA Data, Market, Trading, Transaction, Wallet) | Kiel |
 | [`docs`](docs) | Plan, research, developer experience notes | All |
 
@@ -83,6 +84,23 @@ the card in the app only; payments are passkey-signed EIP-3009 authorizations
 `/portfolio` and `/agent/*` exist when `AGENT_MODE` is `dry` or `live`. Errors are `{error, code}`;
 `code: "SESSION_EXPIRED"` / `"NOT_LOGGED_IN"` means the Agentic Wallet needs a sign-in. Browser
 origins are allowed through `WEB_ORIGIN`.
+
+## BNB Agent Studio (BSC testnet)
+
+The refill decision is also published as a seller agent built with **BNB Agent Studio** (`bag` CLI,
+`@bnbagent/studio-cli` 0.0.14). It has no LLM and never trades: the work hook reads `GET /agent/preview` and
+`GET /agent/session` from our API and returns them as the deliverable. Testnet only, throwaway wallet; the mainnet
+Agentic Wallet is not involved.
+
+| What | Where |
+| --- | --- |
+| ERC-8004 identity | agent_id **2592**, registry `0x8004A818BFB912233c491871b3d84c89A494BD9e` (chain 97), tx [`0xfb6ce7ec…4696`](https://testnet.bscscan.com/tx/0xfb6ce7ec7b7d6bc57e856d720b30d8764cba3f9c9c0e9f271aa70b94cf7d4696) |
+| Deployed agent (managed 48 h trial, until ~12 Oct 23:57 UTC) | [agent card](https://bnbagent-api.bnbchain.world/v1/rt/01M4M3ZMDKZD00GM57NY2WRTN4/.well-known/agent-card.json) |
+| ERC-8183 job **1431**: negotiate → fund → `notify_funded` → `SUBMITTED` in 28 s | fund tx [`0xddd054e3…5644`](https://testnet.bscscan.com/tx/0xddd054e38bd9fabe5fbc7bb5bc9da1a0eec4d25967dffce5854703ad3f275644), [deliverable](https://bnbagent-api.bnbchain.world/v1/deliverables/sha256/08b64cc4bc668a88c04e55cc15561f3140e1b30c0f9665029fec30e35b160ad2.json) |
+
+Commands, all tx hashes and what went wrong: [`packages/agent/studio`](packages/agent/studio/README.md). This was
+done after our DX report form was submitted, so the Agent Studio feedback lives in
+[`docs/dx-report.md`](docs/dx-report.md) §4 and [`docs/dx-notes.md`](docs/dx-notes.md) (rows dated 2026-10-11).
 
 ## Deployment
 
