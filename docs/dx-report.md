@@ -11,7 +11,7 @@ and refills a passkey card wallet in USD1 while the US market is open; the card 
 real money, `baw` 1.10.0, Binance Web3 API (RWA Data, Trading, B402). 28 Sep – 11 Oct 2026, team of three,
 working from Indonesia; API server in Kuala Lumpur.
 
-Totals from our log: **58 notes, ~415 minutes lost**: AI stack 175, tokenized-stock data 105, docs 65,
+Totals from our log: **64 notes, ~430 minutes lost**: AI stack 189, tokenized-stock data 105, docs 65,
 API 50, onboarding 20.
 
 ---
@@ -112,14 +112,19 @@ AI agent. Every wallet action is our own code calling `baw` (`packages/agent`).
 - Error text: `30003001` "From token value greater than 5 USD" means the order is *below* the minimum.
   `103` "one side must be a supported stablecoin ({0})" leaves `{0}` unfilled, so it never says which ones.
 
-**BNB Agent Studio** (`bag` CLI 0.0.14, BSC testnet, throwaway wallet, ~10 minutes on 10 Oct; `packages/agent/studio`).
-We used the CLI directly, not the one-prompt skill. Worked first try: `bag init` (11 s), `bag wallet new`,
-`bag doctor`, and `bag dev` serving an A2A agent card plus an MCP endpoint with 15 read-only tools; our work hook
-(no LLM, reads our `/agent/preview`) type-checks and runs. Did not: the docs put MCP at `:8000/mcp` (it is on
-`:9000/mcp` with A2A+MCP), say to edit `sellerCore.ts` (the hook is `buildRunWork()` in `dualMain.ts` and again in
-`mcpMain.ts`), `studio.toml` has Chinese comments, and a FREE no-LLM agent fails `bag deploy prepare` with
-`commerce_no_rail` until a payment rail is enabled. Not exercised: deploy, ERC-8004 registration (it needs the
-deployed endpoint), ERC-8183 jobs, x402.
+**BNB Agent Studio** (`bag` CLI 0.0.14, BSC testnet, throwaway wallet, ~30 minutes on 10–11 Oct;
+`packages/agent/studio`). We used the CLI directly, not the one-prompt skill. It worked end to end: `bag init` (11 s),
+`bag wallet new`, `bag doctor`, `bag dev`, a deploy to the managed 48 h trial, an ERC-8004 identity (agent_id 2592,
+sponsored gas, wallet had 0 tBNB), `bag wallet fund` (0.1 tBNB + 5 U first try), and one full ERC-8183 job (1431):
+`negotiate` → signed quote → funded on-chain → `notify_funded` → `SUBMITTED` 28 s later with our hook's output, the
+Tozzecard refill decision read from our API. What did not: `bag deploy` printed one line and then nothing for 10
+minutes until we killed a still-running `bag dev`; `deploy verify` prints `tx=null` and registers the name
+`studio-agent`; the `negotiate` example the CLI prints produces a quote that `erc8183 buy` refuses (`quote request
+currency is missing`); a FREE job is not gas-sponsored; the deployed MCP endpoint answers 409 `Agent speaks A2A, not
+MCP`; the docs put MCP at `:8000/mcp` (it is `:9000/mcp`) and say to edit `sellerCore.ts` (the hook is
+`buildRunWork()` in `dualMain.ts` and again in `mcpMain.ts`); parts of `studio.toml` and of `bag erc8183 --help` are
+in Chinese; a FREE no-LLM agent fails `deploy prepare` with `commerce_no_rail` until a rail is enabled. Not
+exercised: the one-prompt skill, paid x402, mainnet.
 
 **What is missing** (detail in §7): a read-only address-book listing (the agent can't verify the card is the only
 entry), a dry-run for `swap`, a fee/referrer on `market-order swap`, a timeout and a typed "signed out" error, and a
@@ -148,7 +153,8 @@ library/HTTP API instead of a CLI per wallet.
   - Ondo swaps are gas-relayed; USD1 legs cost the agent BNB.
   - Market status exists for Ondo only.
   - NVDAB vs NVDAon, premarket 28 Sep: 227.70 vs 228.06 per token, ratios 1.00078 vs 1.00172, per share 227.52 vs
-    227.67. On the weekend bStock traded 0.03–0.41% under Ondo.
+    227.67. On both weekends bStock's on-chain price stayed within ±0.12% of the
+    per-share reference × its own ratio (an earlier "0.03–0.41% under Ondo" was a ratio mismatch, #31).
   - **xStocks**: not on this API. `rwa/platforms` (10 Oct) lists only `ondo` and `bstock`, and
     `rwa/tokens?binanceChainId=56` returns 488 tokens, Ondo 442 + bStock 46. We couldn't compare xStocks at all.
 

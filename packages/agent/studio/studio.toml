@@ -28,6 +28,7 @@ signer = "local"
 keystore_dir = "../../.studio/wallets"
 # address = "0x..."   # filled by `bag wallet new`
 address = "0x1B2c2d92B1d7aBB336CFE003e3687bc60AA7B4ff"
+platform_exposed_addresses = ["0x1B2c2d92B1d7aBB336CFE003e3687bc60AA7B4ff"]
 
 [llm]
 provider = "none"
@@ -71,3 +72,20 @@ acknowledged_at = "2026-10-10T23:35:52Z"
 max_per_topup_usd = 1.0
 max_per_day_usd = 3.0
 max_per_month_usd = 15.0
+
+[deploy.platform]
+terms_accepted_at = "2026-10-10T23:57:06Z"
+slug = "tozzecardagent"
+deployment_id = "01M4M3ZMDK78NCXHY6SRQ8HBW5"
+backend = "aws"
+agent_id = "01M4M3ZMDKZD00GM57NY2WRTN4"
+invoke_url = "https://bnbagent-api.bnbchain.world/v1/rt/01M4M3ZMDKZD00GM57NY2WRTN4/.well-known/agent-card.json"
+last_deploy_at = "2026-10-10T23:57:48Z"
+
+[deploy]
+packaging = "zip"
+
+[identity]
+endpoint = "https://bnbagent-api.bnbchain.world/v1/rt/01M4M3ZMDKZD00GM57NY2WRTN4/.well-known/agent-card.json"
+registered_at = "2026-10-10T23:58:25.220Z"
+agent_id = 2592
